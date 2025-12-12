@@ -8,6 +8,8 @@ const Dashboard: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('All Status');
+  const [timeFilter, setTimeFilter] = useState<string>('Last Week'); // New state for time filter
+  const [showTimeDropdown, setShowTimeDropdown] = useState(false); // State for dropdown visibility
   
   const totalPages = 10;
 
@@ -71,7 +73,10 @@ const Dashboard: React.FC = () => {
   ];
 
   // Status options for dropdown
-  const statusOptions = ['All Status', 'Confirmed', 'Pending', 'Completed', 'Cancelled'];
+  const statusOptions = ['All Status', 'Confirmed', 'Pending', 'Cancelled'];
+  
+  // Time filter options
+  const timeOptions = ['Last Week', 'Last Month', 'Last Year'];
 
   const handleCheckboxChange = (index: number) => {
     setCheckedRows(prev => {
@@ -105,6 +110,11 @@ const Dashboard: React.FC = () => {
     setStatusFilter(e.target.value);
   };
 
+  const handleTimeFilterChange = (option: string) => {
+    setTimeFilter(option);
+    setShowTimeDropdown(false);
+  };
+
   // Filter appointments based on search query and status filter
   const filteredAppointments = appointments.filter(appointment => {
     const matchesSearch = 
@@ -119,269 +129,308 @@ const Dashboard: React.FC = () => {
     return matchesSearch && matchesStatus;
   });
 
- 
-return (
-  <div className="dashboard-container">
-    <Sidebar />
-    <div className="main-content">
-      <Navbar />
-      <div className="dashboard-content">
-        
-        {/* Welcome Section */}
-        <div className="welcome-section">
-          <h1 className="welcome-title">Dashboard</h1>
-          <p className="welcome-subtitle">Welcome back! Here's what's happening today.</p>
-        </div>
-
-        {/* Stats Cards */}
-        <div className="stats-container">
-          {/* Total Patients Card */}
-          <div className="total-patients-card">
-            <div className="card-content">
-              <h3 className="card-title">Total Patients</h3>
-              <h2 className="card-number">1,204</h2>
-            </div>
-            <div className="card-icon">
-              <img 
-                src="/total-patients.svg" 
-                alt="Total Patients"
-                onError={(e) => {
-                  const target = e.target as HTMLImageElement;
-                  target.style.display = 'none';
-                  const fallback = document.createElement('div');
-                  fallback.className = 'card-icon-fallback';
-                  fallback.textContent = '👥';
-                  target.parentNode?.appendChild(fallback);
-                }}
-              />
-            </div>
-          </div>
-
-          {/* Today's Patients Card */}
-          <div className="today-patients-card">
-            <div className="today-card-content">
-              <h3 className="today-title">Today's Patients</h3>
-              <h2 className="today-number">24</h2>
-            </div>
-            <div className="today-card-icon">
-              <img 
-                src="/today-patients.svg" 
-                alt="Today's Patients"
-                onError={(e) => {
-                  const target = e.target as HTMLImageElement;
-                  target.style.display = 'none';
-                  const fallback = document.createElement('div');
-                  fallback.className = 'today-card-icon-fallback';
-                  fallback.textContent = '📊';
-                  target.parentNode?.appendChild(fallback);
-                }}
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* Main Dashboard Layout */}
-        <div className="dashboard-main">
-          {/* Left Column */}
-          <div className="dashboard-left">
-            {/* Alerts Section */}
-            <div className="alerts-section">
-              <div className="alerts-header">
-                <h2 className="alerts-title">Alerts & Notifications</h2>
+  return (
+    <div className="dashboard-container">
+      <Sidebar />
+      <div className="main-content">
+        <Navbar />
+        <div className="dashboard-content">
+          
+          {/* Welcome Section with Time Filter */}
+          <div className="welcome-section">
+            <div className="welcome-header">
+              <div className="welcome-text">
+                <h1 className="welcome-title">Dashboard</h1>
+                <p className="welcome-subtitle">Welcome back! Here's what's happening today.</p>
               </div>
-              <ul className="alerts-list">
-                {alerts.map((alert, index) => (
-                  <li key={index} className="alert-item">
-                    <span className="alert-bullet">•</span>
-                    <p className="alert-text">{alert}</p>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            {/* Appointments Section */}
-            <div className="appointments-section">
-              <div className="section-header">
-                <h2 className="section-title">Appointments</h2>
-              </div>
-
-              {/* Filter Row - Below Appointments Title */}
-              <div className="filter-row">
-                <div className="appointments-search-container">
-                  {/* Search Icon on the left like navbar */}
-                  <div className="appointments-search-icon-wrapper">
+              <div className="time-filter-container">
+                <button 
+                  className="time-filter-btn"
+                  onClick={() => setShowTimeDropdown(!showTimeDropdown)}
+                >
+                  <div className="time-filter-content">
                     <img 
-                      src="/search.svg" 
-                      alt="Search"
-                      className="appointments-search-svg-icon"
+                      src="/calendar.svg" 
+                      alt="Calendar"
+                      className="calendar-icon"
                       onError={(e) => {
                         const target = e.target as HTMLImageElement;
                         target.style.display = 'none';
                         const fallback = document.createElement('div');
-                        fallback.className = 'appointments-search-icon-fallback';
-                        fallback.textContent = '🔍';
+                        fallback.className = 'calendar-icon-fallback';
+                        fallback.textContent = '📅';
                         target.parentNode?.appendChild(fallback);
                       }}
                     />
+                    <span className="time-filter-text">{timeFilter}</span>
+                    <span className="dropdown-arrow">▼</span>
                   </div>
-                  
-                  <input
-                    type="text"
-                    placeholder="Search"
-                    className="appointments-search-input"
-                    value={searchQuery}
-                    onChange={handleSearchChange}
-                  />
-                </div>
-                
-                <div className="filter-dropdown-container">
-                  <select 
-                    value={statusFilter} 
-                    onChange={handleStatusFilterChange}
-                    className="filter-select"
-                  >
-                    {statusOptions.map((option) => (
-                      <option key={option} value={option}>{option}</option>
+                </button>
+                {showTimeDropdown && (
+                  <div className="time-filter-dropdown">
+                    {timeOptions.map((option) => (
+                      <button
+                        key={option}
+                        className={`time-filter-option ${timeFilter === option ? 'selected' : ''}`}
+                        onClick={() => handleTimeFilterChange(option)}
+                      >
+                        {option}
+                      </button>
                     ))}
-                  </select>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Stats Cards */}
+          <div className="stats-container">
+            {/* Total Patients Card */}
+            <div className="total-patients-card">
+              <div className="card-content">
+                <h3 className="card-title">Total Patients</h3>
+                <h2 className="card-number">1,204</h2>
+              </div>
+              <div className="card-icon">
+                <img 
+                  src="/total-patients.svg" 
+                  alt="Total Patients"
+                  onError={(e) => {
+                    const target = e.target as HTMLImageElement;
+                    target.style.display = 'none';
+                    const fallback = document.createElement('div');
+                    fallback.className = 'card-icon-fallback';
+                    fallback.textContent = '👥';
+                    target.parentNode?.appendChild(fallback);
+                  }}
+                />
+              </div>
+            </div>
+
+            {/* Today's Patients Card */}
+            <div className="today-patients-card">
+              <div className="today-card-content">
+                <h3 className="today-title">Today's Patients</h3>
+                <h2 className="today-number">24</h2>
+              </div>
+              <div className="today-card-icon">
+                <img 
+                  src="/today-patients.svg" 
+                  alt="Today's Patients"
+                  onError={(e) => {
+                    const target = e.target as HTMLImageElement;
+                    target.style.display = 'none';
+                    const fallback = document.createElement('div');
+                    fallback.className = 'today-card-icon-fallback';
+                    fallback.textContent = '📊';
+                    target.parentNode?.appendChild(fallback);
+                  }}
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Main Dashboard Layout */}
+          <div className="dashboard-main">
+            {/* Left Column */}
+            <div className="dashboard-left">
+              {/* Alerts Section */}
+              <div className="alerts-section">
+                <div className="alerts-header">
+                  <h2 className="alerts-title">Alerts & Notifications</h2>
                 </div>
+                <ul className="alerts-list">
+                  {alerts.map((alert, index) => (
+                    <li key={index} className="alert-item">
+                      <span className="alert-bullet">•</span>
+                      <p className="alert-text">{alert}</p>
+                    </li>
+                  ))}
+                </ul>
               </div>
 
-              <div className="table-horizontal-scroll-container">
-                <div className="table-wrapper">
-                  <table className="appointments-table">
-                    <thead>
-                      <tr>
-                        <th>
-                          <div className="checkbox-header">
-                            <div 
-                              className={`custom-checkbox ${checkedRows.length === appointments.length ? 'checked' : ''}`}
-                              onClick={handleSelectAll}
-                            >
-                              <span className="checkmark">✓</span>
-                            </div>
-                          </div>
-                        </th>
-                        <th>Patient</th>
-                        <th>Doctor</th>
-                        <th>Date</th>
-                        <th>Time</th>
-                        <th>Type</th>
-                        <th>Phone</th>
-                        <th>Status</th>
-                        <th>Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {filteredAppointments.map((appointment, index) => (
-                        <tr key={index}>
-                          <td>
-                            <div className="checkbox-cell">
+              {/* Appointments Section */}
+              <div className="appointments-section">
+                <div className="section-header">
+                  <h2 className="section-title">Appointments</h2>
+                </div>
+
+                {/* Filter Row - Below Appointments Title */}
+                <div className="filter-row">
+                  <div className="appointments-search-container">
+                    {/* Search Icon on the left like navbar */}
+                    <div className="appointments-search-icon-wrapper">
+                      <img 
+                        src="/search.svg" 
+                        alt="Search"
+                        className="appointments-search-svg-icon"
+                        onError={(e) => {
+                          const target = e.target as HTMLImageElement;
+                          target.style.display = 'none';
+                          const fallback = document.createElement('div');
+                          fallback.className = 'appointments-search-icon-fallback';
+                          fallback.textContent = '🔍';
+                          target.parentNode?.appendChild(fallback);
+                        }}
+                      />
+                    </div>
+                    
+                    <input
+                      type="text"
+                      placeholder="Search"
+                      className="appointments-search-input"
+                      value={searchQuery}
+                      onChange={handleSearchChange}
+                    />
+                  </div>
+                  
+                  <div className="filter-dropdown-container">
+                    <select 
+                      value={statusFilter} 
+                      onChange={handleStatusFilterChange}
+                      className="filter-select"
+                    >
+                      {statusOptions.map((option) => (
+                        <option key={option} value={option}>{option}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                <div className="table-horizontal-scroll-container">
+                  <div className="table-wrapper">
+                    <table className="appointments-table">
+                      <thead>
+                        <tr>
+                          <th>
+                            <div className="checkbox-header">
                               <div 
-                                className={`custom-checkbox ${checkedRows.includes(index) ? 'checked' : ''}`}
-                                onClick={() => handleCheckboxChange(index)}
+                                className={`custom-checkbox ${checkedRows.length === appointments.length ? 'checked' : ''}`}
+                                onClick={handleSelectAll}
                               >
                                 <span className="checkmark">✓</span>
                               </div>
                             </div>
-                          </td>
-                          <td>
-                            <div className="patient-info">
-                              <div className="patient-name">{appointment.patient}</div>
-                              <div className="patient-email">{appointment.email}</div>
-                            </div>
-                          </td>
-                          <td>{appointment.doctor}</td>
-                          <td>{appointment.date}</td>
-                          <td>{appointment.time}</td>
-                          <td>{appointment.type}</td>
-                          <td>{appointment.phone}</td>
-                          <td>
-                            <span className={`status-badge status-${appointment.status.toLowerCase()}`}>
-                              {appointment.status}
-                            </span>
-                          </td>
-                          <td>
-                            <div className="actions-container">
-                              <button className="action-btn delete-btn">
-                                <img 
-                                  src="/delete.svg" 
-                                  alt="Delete"
-                                  className="delete-icon"
-                                  onError={(e) => {
-                                    const target = e.target as HTMLImageElement;
-                                    target.style.display = 'none';
-                                    const fallback = document.createElement('span');
-                                    fallback.className = 'delete-icon-fallback';
-                                    fallback.textContent = '🗑️';
-                                    target.parentNode?.appendChild(fallback);
-                                  }}
-                                />
-                              </button>
-                            </div>
-                          </td>
+                          </th>
+                          <th>Patient</th>
+                          <th>Doctor</th>
+                          <th>Date</th>
+                          <th>Time</th>
+                          <th>Type</th>
+                          <th>Phone</th>
+                          <th>Status</th>
+                          <th>Actions</th>
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                      </thead>
+                      <tbody>
+                        {filteredAppointments.map((appointment, index) => (
+                          <tr key={index}>
+                            <td>
+                              <div className="checkbox-cell">
+                                <div 
+                                  className={`custom-checkbox ${checkedRows.includes(index) ? 'checked' : ''}`}
+                                  onClick={() => handleCheckboxChange(index)}
+                                >
+                                  <span className="checkmark">✓</span>
+                                </div>
+                              </div>
+                            </td>
+                            <td>
+                              <div className="patient-info">
+                                <div className="patient-name">{appointment.patient}</div>
+                                <div className="patient-email">{appointment.email}</div>
+                              </div>
+                            </td>
+                            <td>{appointment.doctor}</td>
+                            <td>{appointment.date}</td>
+                            <td>{appointment.time}</td>
+                            <td>{appointment.type}</td>
+                            <td>{appointment.phone}</td>
+                            <td>
+                              <span className={`status-badge status-${appointment.status.toLowerCase()}`}>
+                                {appointment.status}
+                              </span>
+                            </td>
+                            <td>
+                              <div className="actions-container">
+                                <button className="action-btn delete-btn">
+                                  <img 
+                                    src="/delete.svg" 
+                                    alt="Delete"
+                                    className="delete-icon"
+                                    onError={(e) => {
+                                      const target = e.target as HTMLImageElement;
+                                      target.style.display = 'none';
+                                      const fallback = document.createElement('span');
+                                      fallback.className = 'delete-icon-fallback';
+                                      fallback.textContent = '🗑️';
+                                      target.parentNode?.appendChild(fallback);
+                                    }}
+                                  />
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
                 </div>
-              </div>
 
-              {/* Table Footer */}
-              <div className="table-footer">
-                <div className="pagination-info">
-                  Showing 1 - 10 out of 233
-                </div>
-                <div className="pagination-controls">
-                  <button 
-                    className="pagination-btn"
-                    onClick={() => handlePageChange(currentPage - 1)}
-                    disabled={currentPage === 1}
-                  >
-                    ← Previous
-                  </button>
-                  <button 
-                    className={`pagination-btn ${currentPage === 1 ? 'active' : ''}`}
-                    onClick={() => handlePageChange(1)}
-                  >
-                    1
-                  </button>
-                  <button 
-                    className={`pagination-btn ${currentPage === 2 ? 'active' : ''}`}
-                    onClick={() => handlePageChange(2)}
-                  >
-                    2
-                  </button>
-                  <span className="pagination-ellipsis">...</span>
-                  <button 
-                    className={`pagination-btn ${currentPage === 9 ? 'active' : ''}`}
-                    onClick={() => handlePageChange(9)}
-                  >
-                    9
-                  </button>
-                  <button 
-                    className={`pagination-btn ${currentPage === 10 ? 'active' : ''}`}
-                    onClick={() => handlePageChange(10)}
-                  >
-                    10
-                  </button>
-                  <button 
-                    className="pagination-btn"
-                    onClick={() => handlePageChange(currentPage + 1)}
-                    disabled={currentPage === totalPages}
-                  >
-                    Next →
-                  </button>
+                {/* Table Footer */}
+                <div className="table-footer">
+                  <div className="pagination-info">
+                    Showing 1 - 10 out of 233
+                  </div>
+                  <div className="pagination-controls">
+                    <button 
+                      className="pagination-btn"
+                      onClick={() => handlePageChange(currentPage - 1)}
+                      disabled={currentPage === 1}
+                    >
+                      ← Previous
+                    </button>
+                    <button 
+                      className={`pagination-btn ${currentPage === 1 ? 'active' : ''}`}
+                      onClick={() => handlePageChange(1)}
+                    >
+                      1
+                    </button>
+                    <button 
+                      className={`pagination-btn ${currentPage === 2 ? 'active' : ''}`}
+                      onClick={() => handlePageChange(2)}
+                    >
+                      2
+                    </button>
+                    <span className="pagination-ellipsis">...</span>
+                    <button 
+                      className={`pagination-btn ${currentPage === 9 ? 'active' : ''}`}
+                      onClick={() => handlePageChange(9)}
+                    >
+                      9
+                    </button>
+                    <button 
+                      className={`pagination-btn ${currentPage === 10 ? 'active' : ''}`}
+                      onClick={() => handlePageChange(10)}
+                    >
+                      10
+                    </button>
+                    <button 
+                      className="pagination-btn"
+                      onClick={() => handlePageChange(currentPage + 1)}
+                      disabled={currentPage === totalPages}
+                    >
+                      Next →
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
-
       </div>
     </div>
-  </div>
-);
+  );
 };
 
 export default Dashboard;

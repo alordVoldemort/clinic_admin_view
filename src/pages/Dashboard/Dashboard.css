@@ -932,3 +932,146 @@
 .dashboard-content::-webkit-scrollbar-thumb:hover {
   background: #555;
 }
+
+/* Welcome Header with Time Filter */
+.welcome-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 32px;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.welcome-text {
+  flex: 1;
+}
+
+/* Time Filter Container */
+.time-filter-container {
+  position: relative;
+}
+
+.time-filter-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 16px;
+  background: #FFFFFF;
+  border: 1px solid #D0D5DD;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: 'Poppins', sans-serif;
+  font-size: 14px;
+  color: #344054;
+  min-width: 160px;
+  height: 40px;
+}
+
+.time-filter-btn:hover {
+  background: #F9FAFB;
+  border-color: #9CA3AF;
+}
+
+.time-filter-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+}
+
+.calendar-icon {
+  width: 16px;
+  height: 16px;
+  object-fit: contain;
+}
+
+.calendar-icon-fallback {
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.time-filter-text {
+  font-weight: 500;
+}
+
+.dropdown-arrow {
+  font-size: 10px;
+  margin-left: 4px;
+  color: #667085;
+}
+
+/* Time Filter Dropdown */
+.time-filter-dropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 4px;
+  background: #FFFFFF;
+  border: 1px solid #D0D5DD;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  min-width: 160px;
+  z-index: 1000;
+  overflow: hidden;
+}
+
+.time-filter-option {
+  width: 100%;
+  padding: 10px 16px;
+  background: transparent;
+  border: none;
+  text-align: left;
+  font-family: 'Poppins', sans-serif;
+  font-size: 14px;
+  color: #344054;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.time-filter-option:hover {
+  background: #F9FAFB;
+}
+
+.time-filter-option.selected {
+  background: #F0F4FF;
+  color: #155DFC;
+  font-weight: 500;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .welcome-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .time-filter-container {
+    align-self: flex-end;
+  }
+  
+  .time-filter-btn {
+    min-width: 140px;
+  }
+}
+
+@media (max-width: 480px) {
+  .time-filter-btn {
+    min-width: 120px;
+    height: 36px;
+    padding: 8px 12px;
+  }
+  
+  .time-filter-text {
+    font-size: 13px;
+  }
+  
+  .calendar-icon {
+    width: 14px;
+    height: 14px;
+  }
+}
