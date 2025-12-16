@@ -2,7 +2,12 @@ import React from 'react';
 import { NavLink } from 'react-router-dom';
 import './Sidebar.css';
 
-const Sidebar: React.FC = () => {
+interface SidebarProps {
+  isOpen?: boolean;
+  onClose?: () => void;
+}
+
+const Sidebar: React.FC<SidebarProps> = ({ isOpen = false, onClose = () => {} }) => {
   const menuItems = [
     {
       name: 'Dashboard',
@@ -32,18 +37,14 @@ const Sidebar: React.FC = () => {
   ];
 
   return (
-    <aside className="sidebar">
-      
+    <aside className={`sidebar ${isOpen ? 'open' : ''}`}>
       <div className="sidebar-outer">
-        
-      
         <div className="logo-section">
           <img 
             src="/logo.svg" 
             alt="Nirmal Health Care" 
             className="sidebar-logo"
             onError={(e) => {
-              
               const target = e.target as HTMLImageElement;
               target.style.display = 'none';
               const fallback = document.createElement('div');
@@ -61,10 +62,7 @@ const Sidebar: React.FC = () => {
           />
         </div>
 
-        {/* Inner Box Layout */}
         <div className="sidebar-inner">
-          
-          
           <nav className="nav-menu">
             {menuItems.map((item) => (
               <NavLink
@@ -73,6 +71,7 @@ const Sidebar: React.FC = () => {
                 className={({ isActive }) =>
                   `nav-item ${isActive ? 'active' : ''}`
                 }
+                onClick={onClose}
               >
                 <div className="nav-icon-wrapper">
                   <img 
@@ -80,7 +79,6 @@ const Sidebar: React.FC = () => {
                     alt={item.name}
                     className="nav-icon"
                     onError={(e) => {
-                      
                       const target = e.target as HTMLImageElement;
                       target.style.display = 'none';
                       const fallback = document.createElement('div');
@@ -94,12 +92,6 @@ const Sidebar: React.FC = () => {
               </NavLink>
             ))}
           </nav>
-
-          
-          <div className="logout-section">
-            
-          </div>
-
         </div>
       </div>
     </aside>

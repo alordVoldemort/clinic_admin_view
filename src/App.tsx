@@ -9,21 +9,41 @@ import Dashboard from './pages/Dashboard/Dashboard';
 import Appointments from './pages/Appointments/Appointments';
 import ContactMessage from './pages/Contact-Message/ContactMessage';
 import Testimonials from './pages/Testimonials/Testimonials';
+import Layout from './components/common/Layout';
 
 function App() {
   return (
     <Router>
       <Routes>
+        {/* Public routes without layout */}
         <Route path="/" element={<Login />} />
         <Route path="/login" element={<Login />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-link-sent" element={<ResetLinkSent />} />
         <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/password-reset-success" element={<PasswordResetSuccess />} />
-        <Route path="/dashboard" element={<Dashboard />} /> 
-        <Route path="/appointments" element={<Appointments />} />
-        <Route path="/contact-message" element={<ContactMessage />} />
-        <Route path="/testimonial" element={<Testimonials />} />
+        
+        {/* Admin routes with layout */}
+        <Route path="/dashboard" element={
+          <Layout>
+            <Dashboard />
+          </Layout>
+        } />
+        <Route path="/appointments" element={
+          <Layout>
+            <Appointments />
+          </Layout>
+        } />
+        <Route path="/contact-message" element={
+          <Layout>
+            <ContactMessage />
+          </Layout>
+        } />
+        <Route path="/testimonial" element={
+          <Layout>
+            <Testimonials />
+          </Layout>
+        } />
       </Routes>
     </Router>
   );

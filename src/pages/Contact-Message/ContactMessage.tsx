@@ -1,6 +1,4 @@
 import React, { useState } from 'react';
-import Sidebar from '../../components/Sidebar/Sidebar';
-import Navbar from '../../components/Navbar/Navbar';
 import './ContactMessage.css';
 
 // Import SVG icons from assets
@@ -192,9 +190,9 @@ const ContactMessage: React.FC = () => {
 
   return (
     <div className="contact-message-container">
-      <Sidebar />
+  
       <div className="main-content">
-        <Navbar />
+        
         <div className="contact-message-content">
           
           {/* Header Section */}

@@ -24,7 +24,7 @@
 /* Contact Message Content */
 .contact-message-content {
   flex: 1;
-  padding: 109px 42px;
+  padding: 54px 42px;
   background: #F4F7FA;
   overflow-y: auto;
   width: 100%;
@@ -60,7 +60,7 @@
 .contact-subtitle {
   font-family: 'Poppins', sans-serif;
   font-weight: 400;
-  font-size: 16px;
+  font-size: 14px;
   color: #3F74E2;
   margin: 0;
 }
@@ -797,7 +797,7 @@
   }
   
   .contact-title {
-    font-size: 24px;
+    font-size: 20px;
   }
   
   .message-details-modal {

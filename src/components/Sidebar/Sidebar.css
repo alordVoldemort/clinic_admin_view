@@ -4,12 +4,13 @@
   left: 0;
   top: 0;
   width: 271px;
-  height: 100vh; /* Changed from 1280px to 100vh */
+  height: 100vh;
   background: #FFFFFF;
   border-right: 1px solid #EAECF0;
-  z-index: 50;
+  z-index: 1000;
   display: flex;
   flex-direction: column;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* Outer Layout Container */
@@ -18,7 +19,6 @@
   height: 100%;
   position: relative;
 }
-
 
 .logo-section {
   position: absolute;
@@ -33,6 +33,7 @@
 }
 
 .sidebar-logo {
+  /* margin-top: -23px;  */
   width: 140px; 
   height: auto;
   max-height: 60px;
@@ -60,7 +61,7 @@
   padding-top: 12px;
   padding-bottom: 12px;
   gap: 25px;
-  overflow-y: auto; /* Add scroll if content is too long */
+  overflow-y: auto;
 }
 
 /* Navigation Menu */
@@ -124,7 +125,7 @@
 
 /* Active state icon styling */
 .nav-item.active .nav-icon {
-  filter: brightness(0) invert(1); /* Makes icon white */
+  filter: brightness(0) invert(1);
 }
 
 .nav-item.active .nav-icon-fallback {
@@ -146,59 +147,7 @@
   color: #FFFFFF;
 }
 
-/* Log Out Section */
-.logout-section {
-  padding: 0 16px;
-  margin-top: auto; 
-}
-
-
-
-
-/* Logout Icon */
-.logout-icon-wrapper {
-  width: 24px;
-  height: 24px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.logout-icon {
-  width: 20px;
-  height: 20px;
-  object-fit: contain;
-}
-
-.logout-icon-fallback {
-  width: 20px;
-  height: 20px;
-  color: #667085;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 18px;
-}
-
-.logout-btn:hover .logout-icon {
-  filter: invert(16%) sepia(99%) saturate(4057%) hue-rotate(353deg) brightness(95%) contrast(101%);
-}
-
-/* Logout Label */
-.logout-label {
-  font-family: 'Poppins', sans-serif;
-  font-size: 14px;
-  font-weight: 500;
-  color: #344054;
-  flex: 1;
-  text-align: left;
-}
-
-.logout-btn:hover .logout-label {
-  color: #F04438;
-}
-
-/* Responsive Design */
+/* Desktop Responsive */
 @media (max-width: 1024px) {
   .sidebar {
     width: 240px;
@@ -218,10 +167,12 @@
   }
 }
 
+/* MOBILE RESPONSIVE */
 @media (max-width: 768px) {
   .sidebar {
     transform: translateX(-100%);
-    transition: transform 0.3s ease;
+    width: 280px;
+    box-shadow: 4px 0 20px rgba(0, 0, 0, 0.1);
   }
   
   .sidebar.open {
@@ -229,78 +180,65 @@
   }
   
   .sidebar-inner {
-    width: 160px;
+    width: 240px;
     left: 20px;
+    top: 120px;
+    height: calc(100vh - 160px);
   }
   
   .sidebar-logo {
-    width: 100px;
+    width: 150px;
   }
   
-  .nav-label,
-  .logout-label {
-    display: none;
+  .logo-section {
+    top: 20px;
+    padding: 0 20px;
+  }
+  
+  /* Ensure nav labels are visible on mobile */
+  .nav-label {
+    display: block !important;
+    font-size: 15px;
   }
   
   .nav-item {
-    justify-content: center;
-    padding: 12px;
-  }
-  
-  .logout-btn {
-    justify-content: center;
-    padding: 12px;
+    padding: 14px 12px;
   }
 }
 
-/* Add these to your existing Sidebar.css */
-
-/* Mobile menu toggle button (add to Navbar) */
-.menu-toggle {
-  display: none;
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 8px;
-  margin-right: 12px;
-}
-
-.menu-toggle span {
-  display: block;
-  width: 24px;
-  height: 2px;
-  background: #344054;
-  margin: 4px 0;
-  transition: 0.3s;
-}
-
-@media (max-width: 1024px) {
-  .menu-toggle {
-    display: block;
-  }
-  
+/* Small mobile screens */
+@media (max-width: 480px) {
   .sidebar {
-    transform: translateX(-100%);
-    transition: transform 0.3s ease;
-    width: 280px;
+    width: 260px;
   }
   
-  .sidebar.open {
-    transform: translateX(0);
+  .sidebar-inner {
+    width: 220px;
+    left: 20px;
   }
   
-  .sidebar-overlay {
-    display: none;
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.5);
-    z-index: 49;
+  .nav-label {
+    font-size: 14px;
+  }
+}
+
+/* Extra small screens */
+@media (max-width: 360px) {
+  .sidebar {
+    width: 240px;
   }
   
-  .sidebar.open + .sidebar-overlay {
-    display: block;
+  .sidebar-inner {
+    width: 200px;
+    left: 20px;
+  }
+  
+  .nav-label {
+    font-size: 13px;
+  }
+  
+  .nav-item {
+    padding: 12px 10px;
+    gap: 10px;
   }
 }

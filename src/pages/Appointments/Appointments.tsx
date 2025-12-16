@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
-import Sidebar from '../../components/Sidebar/Sidebar';
-import Navbar from '../../components/Navbar/Navbar';
+
 import './Appointments.css';
 
 const Appointments: React.FC = () => {
@@ -125,9 +124,8 @@ const Appointments: React.FC = () => {
 
   return (
     <div className="appointments-container">
-      <Sidebar />
       <div className="main-content">
-        <Navbar />
+        
         <div className="appointments-content">
           
           {/* Header Section with Time Filter */}

@@ -24,7 +24,7 @@
 
 .appointments-content {
   flex: 1;
-  padding: 109px 42px;
+  padding: 54px 42px;
   background: #F4F7FA;
   overflow-y: auto;
   width: 100%;
@@ -240,7 +240,6 @@
   font-weight: 400;
   color: #181717;
   background: transparent;
-  padding: 0 16px;
 }
 
 .appointments-search-input::placeholder {
@@ -824,6 +823,7 @@
   }
   
   .appointments-title {
+    margin-top: 30px;
     font-size: 20px;
   }
   

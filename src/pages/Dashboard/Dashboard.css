@@ -26,7 +26,7 @@
 /* Dashboard Content */
 .dashboard-content {
   flex: 1;
-  padding: 109px 42px;
+  padding: 54px 42px;
   background: #F4F7FA;
   overflow-y: auto;
   overflow-x: hidden;
@@ -309,27 +309,6 @@
   z-index: 1;
 }
 
-.filter-select {
-  width: 100%;
-  height: 40px;
-  padding: 8px 40px 8px 40px; /* Increased left padding for icon */
-  border: 1px solid #D0D5DD;
-  border-radius: 8px;
-  background: #FFFFFF;
-  font-family: 'Poppins', sans-serif;
-  font-size: 14px;
-  color: #344054;
-  outline: none;
-  cursor: pointer;
-  appearance: none;
-  -webkit-appearance: none;
-  -moz-appearance: none;
-  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23667085' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
-  background-repeat: no-repeat;
-  background-position: right 12px center;
-  background-size: 16px;
-}
-
 /* APPOINTMENTS SEARCH - Separate from Navbar */
 .appointments-search-container {
   position: relative;
@@ -432,7 +411,7 @@
 /* Filter Dropdown Container */
 .filter-dropdown-container {
   position: relative;
-  min-width: 160px;
+  min-width: 100px;
 }
 
 .filter-select {
@@ -1137,13 +1116,16 @@
 }
 
 @media (max-width: 768px) {
-  .main-content {
+ .main-content {
     margin-left: 0;
-    width: 100vw;
+    height: auto;
+    overflow: visible;
   }
+
   
   .dashboard-content {
-    padding: 90px 16px 16px 16px;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch; /* smooth iOS scroll */
   }
   
   .welcome-title {
@@ -1450,5 +1432,180 @@
   
   .navbar {
     height: 65px;
+  }
+}
+
+/* Add these styles to your existing Dashboard.css */
+
+/* Mobile Dashboard */
+@media (max-width: 768px) {
+  .dashboard-content {
+    padding: 16px;
+    margin-top: 64px; /* Adjusted for fixed navbar */
+  }
+  
+  .welcome-section {
+    margin-top: 8px;
+  }
+  
+  .welcome-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+  
+  .welcome-text {
+    width: 100%;
+  }
+  
+  .time-filter-container {
+    align-self: flex-start;
+  }
+  
+  .stats-container {
+    flex-direction: column;
+    gap: 16px;
+  }
+  
+  .total-patients-card,
+  .today-patients-card {
+    width: 100%;
+    min-height: 100px;
+  }
+  
+  .dashboard-main {
+    flex-direction: column;
+    gap: 20px;
+  }
+  
+  .dashboard-left {
+    width: 100%;
+  }
+  
+  /* Adjust table for mobile */
+  .appointments-section {
+    overflow-x: auto;
+    margin: 0 -16px;
+    padding: 0 16px;
+    width: calc(100% + 32px);
+  }
+  
+  
+  .filter-row {
+    flex-direction: column;
+    gap: 12px;
+    align-items: stretch;
+  }
+  
+  .appointments-search-container {
+    width: 100%;
+  }
+  
+  .filter-dropdown-container {
+    align-self: flex-start;
+  }
+  
+  /* Alerts section */
+  .alerts-section {
+    margin-bottom: 20px;
+  }
+}
+
+/* Small mobile screens */
+@media (max-width: 480px) {
+  .dashboard-content {
+    padding: 12px;
+    margin-top: 64px;
+  }
+  
+  .welcome-title {
+    font-size: 24px;
+  }
+  
+  .welcome-subtitle {
+    font-size: 14px;
+  }
+  
+  .card-title,
+  .today-title {
+    font-size: 16px;
+  }
+  
+  .card-number,
+  .today-number {
+    font-size: 28px;
+  }
+  
+  .alerts-title {
+    font-size: 18px;
+  }
+  
+  .alert-text {
+    font-size: 14px;
+    line-height: 1.4;
+  }
+  
+  .appointments-section {
+    margin: 0 -12px;
+    padding: 0 12px;
+    width: calc(100% + 24px);
+  }
+  
+  .section-title {
+    font-size: 18px;
+  }
+  
+  .table-footer {
+    flex-direction: column;
+    gap: 12px;
+    align-items: flex-start;
+  }
+  
+  .pagination-controls {
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+  
+  .pagination-btn {
+    padding: 6px 10px;
+    font-size: 12px;
+  }
+}
+
+/* Extra small screens */
+@media (max-width: 360px) {
+  .dashboard-content {
+    padding: 8px;
+  }
+  
+  .welcome-title {
+    margin-top: 20px;
+    font-size: 20px;
+  }
+  
+  .card-title,
+  .today-title {
+    font-size: 14px;
+  }
+  
+  .card-number,
+  .today-number {
+    font-size: 24px;
+  }
+  
+  .time-filter-btn {
+    padding: 8px 12px;
+  }
+  
+  .time-filter-text {
+    font-size: 12px;
+  }
+  
+  .alerts-title {
+    font-size: 16px;
+  }
+  
+  .alert-item {
+    align-items: flex-start;
   }
 }

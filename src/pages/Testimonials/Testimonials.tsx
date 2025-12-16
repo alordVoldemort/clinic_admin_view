@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import Sidebar from '../../components/Sidebar/Sidebar';
-import Navbar from '../../components/Navbar/Navbar';
 import './Testimonials.css';
 
 const Testimonials: React.FC = () => {
@@ -159,7 +158,6 @@ const Testimonials: React.FC = () => {
     <div className="testimonials-container">
       <Sidebar />
       <div className="main-content">
-        <Navbar />
         <div className="testimonials-content">
           
           {/* Header Section */}

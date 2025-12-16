@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import Sidebar from '../../components/Sidebar/Sidebar';
-import Navbar from '../../components/Navbar/Navbar';
+
 import './Dashboard.css';
 
 const Dashboard: React.FC = () => {
@@ -132,7 +132,7 @@ const Dashboard: React.FC = () => {
     <div className="dashboard-container">
       <Sidebar />
       <div className="main-content">
-        <Navbar />
+       
         <div className="dashboard-content">
           
           {/* Welcome Section with Time Filter */}
