@@ -75,7 +75,6 @@ const Dashboard: React.FC = () => {
   // Status options for dropdown
   const statusOptions = ['All Status', 'Confirmed', 'Pending', 'Cancelled'];
   
-  // Time filter options
   const timeOptions = ['Last Week', 'Last Month', 'Last Year'];
 
   const handleCheckboxChange = (index: number) => {
@@ -232,11 +231,16 @@ const Dashboard: React.FC = () => {
 
           {/* Main Dashboard Layout */}
           <div className="dashboard-main">
-            {/* Left Column */}
+            
             <div className="dashboard-left">
-              {/* Alerts Section */}
+              
               <div className="alerts-section">
                 <div className="alerts-header">
+                <img
+                  src= "/alerts-bell.svg" 
+                    alt="Alerts"
+                    className="alerts-bell-icon"
+                  />  
                   <h2 className="alerts-title">Alerts & Notifications</h2>
                 </div>
                 <ul className="alerts-list">
@@ -258,7 +262,6 @@ const Dashboard: React.FC = () => {
                 {/* Filter Row - Below Appointments Title */}
                 <div className="filter-row">
                   <div className="appointments-search-container">
-                    {/* Search Icon on the left like navbar */}
                     <div className="appointments-search-icon-wrapper">
                       <img 
                         src="/search.svg" 
@@ -285,16 +288,31 @@ const Dashboard: React.FC = () => {
                   </div>
                   
                   <div className="filter-dropdown-container">
-                    <select 
-                      value={statusFilter} 
-                      onChange={handleStatusFilterChange}
-                      className="filter-select"
-                    >
-                      {statusOptions.map((option) => (
-                        <option key={option} value={option}>{option}</option>
-                      ))}
-                    </select>
-                  </div>
+  <div className="filter-select-wrapper">
+    <img 
+      src="./filter-icon.svg"
+      alt="Filter"
+      className="filter-icon"
+      onError={(e) => {
+        const target = e.target as HTMLImageElement;
+        target.style.display = 'none';
+        const fallback = document.createElement('span');
+        fallback.className = 'filter-icon-fallback';
+        fallback.textContent = '⚙️';
+        target.parentNode?.appendChild(fallback);
+      }}
+    />
+    <select 
+      value={statusFilter} 
+      onChange={handleStatusFilterChange}
+      className="filter-select"
+    >
+      {statusOptions.map((option) => (
+        <option key={option} value={option}>{option}</option>
+      ))}
+    </select>
+  </div>
+</div>
                 </div>
 
                 <div className="table-horizontal-scroll-container">
@@ -352,24 +370,25 @@ const Dashboard: React.FC = () => {
                               </span>
                             </td>
                             <td>
-                              <div className="actions-container">
-                                <button className="action-btn delete-btn">
-                                  <img 
-                                    src="/delete.svg" 
-                                    alt="Delete"
-                                    className="delete-icon"
-                                    onError={(e) => {
-                                      const target = e.target as HTMLImageElement;
-                                      target.style.display = 'none';
-                                      const fallback = document.createElement('span');
-                                      fallback.className = 'delete-icon-fallback';
-                                      fallback.textContent = '🗑️';
-                                      target.parentNode?.appendChild(fallback);
-                                    }}
-                                  />
-                                </button>
-                              </div>
-                            </td>
+  <div className="actions-container">
+    <img 
+      src="/delete.svg" 
+      alt="Delete"
+      className="delete-action-icon"  
+      onClick={() => {
+        console.log('Delete appointment', index);
+      }}
+      onError={(e) => {
+        const target = e.target as HTMLImageElement;
+        target.style.display = 'none';
+        const fallback = document.createElement('span');
+        fallback.className = 'delete-action-fallback';
+        fallback.textContent = '🗑️';
+        target.parentNode?.appendChild(fallback);
+      }}
+    />
+  </div>
+</td>
                           </tr>
                         ))}
                       </tbody>

@@ -26,14 +26,14 @@ const Sidebar: React.FC = () => {
     },
     {
       name: "Log Out",
-      path: "/logout",
+      path: "/login",
       icon: "/logout.svg"
     }
   ];
 
   return (
     <aside className="sidebar">
-      {/* Outer Layout */}
+      
       <div className="sidebar-outer">
         
       

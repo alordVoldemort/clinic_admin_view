@@ -4,7 +4,7 @@ import './Navbar.css';
 const Navbar: React.FC = () => {
   return (
     <header className="navbar">
-      {/* Left Section - Search Box */}
+      
       <div className="search-section">
         <div className="search-container">
           <div className="search-icon-wrapper">
@@ -14,7 +14,7 @@ const Navbar: React.FC = () => {
               alt="Search" 
               className="search-icon"
               onError={(e) => {
-                // Fallback if search.svg doesn't exist
+                
                 const target = e.target as HTMLImageElement;
                 target.style.display = 'none';
                 const fallback = document.createElement('div');
@@ -25,7 +25,7 @@ const Navbar: React.FC = () => {
             />
           </div>
           
-          {/* Search Input with placeholder */}
+          
           <input 
             type="text" 
             className="search-input" 
@@ -34,16 +34,16 @@ const Navbar: React.FC = () => {
         </div>
       </div>
 
-      {/* Right Section */}
+      
       <div className="right-section">
-        {/* Bell Icon - Import from public folder */}
+        
         <div className="notification-icon">
           <img 
             src="/notification.svg" 
             alt="Notifications" 
             className="bell-icon"
             onError={(e) => {
-              // Fallback if notification.svg doesn't exist
+              
               const target = e.target as HTMLImageElement;
               target.style.display = 'none';
               const fallback = document.createElement('div');
@@ -55,20 +55,20 @@ const Navbar: React.FC = () => {
           <span className="notification-badge">3</span>
         </div>
 
-        {/* Admin Name & Role */}
+        
         <div className="admin-text">
           <p className="admin-name">Dr. Nitin Darda</p>
           <p className="admin-role">Admin</p>
         </div>
         
-        {/* Profile Photo - Last element */}
+        
         <div className="profile-photo">
           <img 
             src="/profile-photo.jpg" 
             alt="Dr. Nitin Darda"
             className="profile-image"
             onError={(e) => {
-              // Fallback if image doesn't exist
+              
               const target = e.target as HTMLImageElement;
               target.style.display = 'none';
               const fallback = document.createElement('div');

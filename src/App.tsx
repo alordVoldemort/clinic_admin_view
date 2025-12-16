@@ -6,6 +6,9 @@ import ResetLinkSent from './pages/ResetLinkSent/ResetLinkSent';
 import ResetPassword from './pages/ResetPassword/ResetPassword';
 import PasswordResetSuccess from './pages/PasswordResetSuccess/PasswordResetSuccess';
 import Dashboard from './pages/Dashboard/Dashboard'; 
+import Appointments from './pages/Appointments/Appointments';
+import ContactMessage from './pages/Contact-Message/ContactMessage';
+import Testimonials from './pages/Testimonials/Testimonials';
 
 function App() {
   return (
@@ -18,6 +21,9 @@ function App() {
         <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/password-reset-success" element={<PasswordResetSuccess />} />
         <Route path="/dashboard" element={<Dashboard />} /> 
+        <Route path="/appointments" element={<Appointments />} />
+        <Route path="/contact-message" element={<ContactMessage />} />
+        <Route path="/testimonial" element={<Testimonials />} />
       </Routes>
     </Router>
   );
