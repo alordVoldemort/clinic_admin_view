@@ -1,25 +1,56 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import './Login.css';
 
 
 const Login: React.FC = () => {
-  const [email, setEmail] = useState('admin@clinic.com');
+  const [email, setEmail] = useState('admin@nirmalhealthcare.co.in');
   const [password, setPassword] = useState('');
-  const [rememberMe, setRememberMe] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    console.log('Login attempt:', { email, password, rememberMe });
-    
-    // Simulate login success and redirect
-    setTimeout(() => {
-      navigate('/dashboard'); // Redirect to dashboard after login
-    }, 500);
-  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+
+  try {
+    const response = await fetch(
+      `${process.env.REACT_APP_BASE_URL}/api/admin/login`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email,
+          password,
+        }),
+      }
+    );
+    console.log(
+  'API URL:',
+  process.env.REACT_APP_API_BASE_URL
+);
+
+
+    const result = await response.json();
+
+    if (result.success) {
+     
+      localStorage.setItem('adminToken', result.data.token);
+      localStorage.setItem('adminData', JSON.stringify(result.data.admin));
+
+     
+      navigate('/dashboard');
+    } else {
+      alert(result.message || 'Login failed');
+    }
+  } catch (error) {
+    console.error('Login error:', error);
+    alert('Something went wrong. Please try again.');
+  }
+};
+
 
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
@@ -29,7 +60,7 @@ const Login: React.FC = () => {
     <div className="login-container">
       <div className="login-frame">
         
-        {/* Logo Section */}
+       
         <div className="logo-wrapper">
           <img 
             src="./Logo.svg" 
@@ -38,15 +69,15 @@ const Login: React.FC = () => {
           />
         </div>
         
-        {/* Subtitle */}
+        
         <p className="login-subtitle">
           Sign in to manage your clinic
         </p>
 
-        {/* Login Form */}
+       
         <form className="login-form" onSubmit={handleSubmit}>
           
-          {/* Email Input */}
+       
           <div className="form-group">
             <label className="form-label">Email Address</label>
             <div className="input-with-icon">
@@ -66,7 +97,7 @@ const Login: React.FC = () => {
             </div>
           </div>
 
-          {/* Password Input */}
+          
           <div className="form-group">
             <label className="form-label">Password</label>
             <div className="input-with-icon">
@@ -93,7 +124,7 @@ const Login: React.FC = () => {
             </div>
           </div>
 
-          {/* Remember Me & Forgot Password */}
+        
           <div className="form-options">
             <div className="remember-me">
               
@@ -105,7 +136,7 @@ const Login: React.FC = () => {
             
           </div>
 
-          {/* Sign In Button */}
+          
           <button type="submit" className="signin-button">
             Sign in
           </button>

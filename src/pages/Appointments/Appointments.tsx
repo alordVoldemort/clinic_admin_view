@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-
+import { useEffect } from "react";
 import "./Appointments.css";
 
 const Appointments: React.FC = () => {
@@ -19,60 +19,62 @@ const Appointments: React.FC = () => {
 
   const totalPages = 10;
 
-  const appointments = [
-    {
-      patient: "Riya Patil",
-      email: "riya.p@sumago.com",
-      doctor: "Dr. Nitin Darda",
-      date: "2024-12-06",
-      time: "09:00 AM",
-      type: "Spine Treatments",
-      phone: "9867523490",
-      status: "Confirmed",
-    },
-    {
-      patient: "Rajesh Patil",
-      email: "showtraders@yahoo.com",
-      doctor: "Dr. Yogita Darda",
-      date: "2024-12-06",
-      time: "10:30 AM",
-      type: "Spine Treatments",
-      phone: "9012314567",
-      status: "Pending",
-    },
-    {
-      patient: "Rakesh Shetty",
-      email: "guptasup@gmail.com",
-      doctor: "Dr. Tanmay Darda",
-      date: "2024-12-06",
-      time: "11:00 AM",
-      type: "Gynecology Treatment",
-      phone: "9876543210",
-      status: "Cancelled",
-    },
-    {
-      patient: "Kiran More",
-      email: "kmoretrans@gmail.com",
-      doctor: "Dr. Nitin Darda",
-      date: "2024-12-06",
-      time: "02:00 PM",
-      type: "Treatment Information",
-      phone: "9867523490",
-      status: "Confirmed",
-    },
-    {
-      patient: "Sunita Shah",
-      email: "sharmasteel@gmail.com",
-      doctor: "Dr. Yogita Darda",
-      date: "2024-12-06",
-      time: "09:30 AM",
-      type: "Kidney Treatment",
-      phone: "9876543210",
-      status: "Pending",
-    },
-  ];
+  // const appointments = [
+  //   {
+  //     patient: "Riya Patil",
+  //     email: "riya.p@sumago.com",
+  //     doctor: "Dr. Nitin Darda",
+  //     date: "2024-12-06",
+  //     time: "09:00 AM",
+  //     type: "Spine Treatments",
+  //     phone: "9867523490",
+  //     status: "Confirmed",
+  //   },
+  //   {
+  //     patient: "Rajesh Patil",
+  //     email: "showtraders@yahoo.com",
+  //     doctor: "Dr. Yogita Darda",
+  //     date: "2024-12-06",
+  //     time: "10:30 AM",
+  //     type: "Spine Treatments",
+  //     phone: "9012314567",
+  //     status: "Pending",
+  //   },
+  //   {
+  //     patient: "Rakesh Shetty",
+  //     email: "guptasup@gmail.com",
+  //     doctor: "Dr. Tanmay Darda",
+  //     date: "2024-12-06",
+  //     time: "11:00 AM",
+  //     type: "Gynecology Treatment",
+  //     phone: "9876543210",
+  //     status: "Cancelled",
+  //   },
+  //   {
+  //     patient: "Kiran More",
+  //     email: "kmoretrans@gmail.com",
+  //     doctor: "Dr. Nitin Darda",
+  //     date: "2024-12-06",
+  //     time: "02:00 PM",
+  //     type: "Treatment Information",
+  //     phone: "9867523490",
+  //     status: "Confirmed",
+  //   },
+  //   {
+  //     patient: "Sunita Shah",
+  //     email: "sharmasteel@gmail.com",
+  //     doctor: "Dr. Yogita Darda",
+  //     date: "2024-12-06",
+  //     time: "09:30 AM",
+  //     type: "Kidney Treatment",
+  //     phone: "9876543210",
+  //     status: "Pending",
+  //   },
+  // ];
 
   // Status options for dropdown
+  const [appointments, setAppointments] = useState<any[]>([]);
+
   const statusOptions = ["All Status", "Confirmed", "Pending", "Cancelled"];
 
   // Time filter options
@@ -161,6 +163,54 @@ const Appointments: React.FC = () => {
 
     return 0;
   });
+
+  useEffect(() => {
+  const fetchAppointments = async () => {
+    try {
+      const token = localStorage.getItem("adminToken");
+
+      const response = await fetch(
+        `${process.env.REACT_APP_BASE_URL}/api/appointments/admin`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      const result = await response.json();
+
+      if (result.success) {
+        
+        const mappedData = Array.isArray(result.data)
+  ? result.data.map((item: any) => ({
+      patient: item.patient_name,
+      email: item.patient_email,
+      doctor: item.doctor_name,
+      date: item.appointment_date,
+      time: item.appointment_time,
+      type: item.treatment_type,
+      phone: item.patient_phone,
+      status: item.status,
+    }))
+  : [];
+
+
+
+        setAppointments(mappedData);
+      } else {
+        console.error("Failed to fetch appointments");
+      }
+    } catch (error) {
+      console.error("Appointments API error:", error);
+    }
+  };
+
+  fetchAppointments();
+}, []);
+
 
   return (
     <div className="appointments-container">
@@ -616,7 +666,7 @@ const Appointments: React.FC = () => {
                       <th>Active</th>
                     </tr>
                   </thead>
-                  <tbody>
+                  {/* <tbody>
                     {sortedAppointments.map(
                       (
                         appointment,
@@ -681,7 +731,28 @@ const Appointments: React.FC = () => {
                         </tr>
                       )
                     )}
-                  </tbody>
+                  </tbody> */}
+                  <tbody>
+  {appointments.length === 0 ? (
+    <tr>
+      <td colSpan={6} style={{ textAlign: "center" }}>
+        No appointments found
+      </td>
+    </tr>
+  ) : (
+    appointments.map((item, index) => (
+      <tr key={item.id || index}>
+        <td>{item.patient}</td>
+        <td>{item.email}</td>
+        <td>{item.phone}</td>
+        <td>{item.service}</td>
+        <td>{item.date}</td>
+        <td>{item.status}</td>
+      </tr>
+    ))
+  )}
+</tbody>
+
                 </table>
               </div>
             </div>
