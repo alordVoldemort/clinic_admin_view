@@ -1,55 +1,62 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { login } from '../../apis/admin';
 import './Login.css';
 
-
 const Login: React.FC = () => {
-  const [email, setEmail] = useState('admin@nirmalhealthcare.co.in');
-  const [password, setPassword] = useState('');
+  // Hardcoded admin credentials for testing
+  const [email, setEmail] = useState('admin@clinic.com');
+  const [password, setPassword] = useState('admin123');
   const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
   const navigate = useNavigate();
 
-
   const handleSubmit = async (e: React.FormEvent) => {
-  e.preventDefault();
+    e.preventDefault();
+    setError('');
+    setIsLoading(true);
 
-  try {
-    const response = await fetch(
-      `${process.env.REACT_APP_BASE_URL}/api/admin/login`,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          email,
-          password,
-        }),
-      }
-    );
-    console.log(
-  'API URL:',
-  process.env.REACT_APP_API_BASE_URL
-);
+    // Development mode: Bypass API for testing (set to true to enable)
+    const DEV_MODE_BYPASS = false;
 
-
-    const result = await response.json();
-
-    if (result.success) {
-     
-      localStorage.setItem('adminToken', result.data.token);
-      localStorage.setItem('adminData', JSON.stringify(result.data.admin));
-
-     
-      navigate('/dashboard');
-    } else {
-      alert(result.message || 'Login failed');
+    if (DEV_MODE_BYPASS) {
+      // Hardcoded mock response for development
+      const mockAdminData = {
+        id: 'dev-admin-id',
+        name: 'Admin User',
+        email: email,
+        role: 'admin',
+        is_active: 1
+      };
+      const mockToken = 'dev-mock-token-' + Date.now();
+      
+      localStorage.setItem('adminToken', mockToken);
+      localStorage.setItem('adminData', JSON.stringify(mockAdminData));
+      
+      setTimeout(() => {
+        navigate('/dashboard');
+        setIsLoading(false);
+      }, 500);
+      return;
     }
-  } catch (error) {
-    console.error('Login error:', error);
-    alert('Something went wrong. Please try again.');
-  }
-};
+
+    try {
+      const result = await login({ email, password });
+
+      if (result.success) {
+        // Token and admin data are already stored by the login API function
+        navigate('/dashboard');
+      } else {
+        setError(result.message || 'Login failed');
+      }
+    } catch (error: any) {
+      console.error('Login error:', error);
+      setError(error.message || 'Something went wrong. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
 
   const togglePasswordVisibility = () => {
@@ -137,8 +144,23 @@ const Login: React.FC = () => {
           </div>
 
           
-          <button type="submit" className="signin-button">
-            Sign in
+          {error && (
+            <div className="error-message" style={{ 
+              color: '#ff4444', 
+              marginBottom: '1rem', 
+              fontSize: '0.875rem',
+              textAlign: 'center'
+            }}>
+              {error}
+            </div>
+          )}
+          
+          <button 
+            type="submit" 
+            className="signin-button"
+            disabled={isLoading}
+          >
+            {isLoading ? 'Signing in...' : 'Sign in'}
           </button>
         </form>
       </div>
