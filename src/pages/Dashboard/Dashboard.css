@@ -52,7 +52,7 @@
 /* Dashboard Content */
 .dashboard-content {
   flex: 1;
-  padding: 24px 42px 42px 42px; /* Reduced top padding for professional spacing */
+  padding: 24px 42px 42px 60px; /* Reduced top padding for professional spacing */
   background: #F4F7FA;
   overflow-y: auto;
   overflow-x: hidden;
@@ -95,13 +95,14 @@
   display: flex;
   gap: 31px;
   margin-bottom: 32px;
-  width: 1095px;
+  width: 100%;
   height: 163px;
 }
 
 /* Total Patients Card */
 .total-patients-card {
-  width: 532px;
+  flex: 1;
+  min-width: 0;
   height: 163px;
   background: #FFFFFF;
   border-radius: 8px;
@@ -164,7 +165,8 @@
 
 /* Today's Patients Card */
 .today-patients-card {
-  width: 532px;
+  flex: 1;
+  min-width: 0;
   height: 163px;
   background: #FFFFFF;
   border-radius: 8px;
@@ -298,7 +300,12 @@
 
 /* Section Header */
 .section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   margin-bottom: 24px;
+  flex-wrap: wrap;
+  gap: 12px;
 }
 
 .section-title {
@@ -864,6 +871,43 @@
   border-color: #9CA3AF;
 }
 
+/* Status Actions Container - Groups Delete button and Status filter */
+.status-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Delete Selected Button */
+.delete-selected-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 16px;
+  background: #DC2626;
+  border: 1px solid #DC2626;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: 'Poppins', sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  color: #FFFFFF;
+  min-width: 120px;
+  height: 40px;
+  margin: 0;
+}
+
+.delete-selected-btn:hover:not(:disabled) {
+  background: #B91C1C;
+  border-color: #B91C1C;
+}
+
+.delete-selected-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 .time-filter-content {
   display: flex;
   align-items: center;
@@ -890,9 +934,11 @@
 }
 
 .dropdown-arrow {
-  font-size: 10px;
+  width: 16px;
+  height: 16px;
   margin-left: 4px;
-  color: #667085;
+  flex-shrink: 0;
+  object-fit: contain;
 }
 
 /* Time Filter Dropdown */
@@ -997,8 +1043,8 @@
   
   .total-patients-card,
   .today-patients-card {
-    width: 100%;
-    max-width: 532px;
+    flex: 1;
+    min-width: 0;
   }
   
   .appointments-search-container {
@@ -1031,7 +1077,17 @@
     gap: 16px;
   }
   
-  .appointments-search-container,
+  .appointments-search-container {
+    width: 100%;
+  }
+  
+  .status-actions {
+    width: 100%;
+    flex-direction: column;
+    gap: 12px;
+  }
+  
+  .delete-selected-btn,
   .filter-dropdown-container {
     width: 100%;
   }
@@ -1475,6 +1531,17 @@
   
   .time-filter-container {
     align-self: flex-start;
+    width: 100%;
+  }
+  
+  .section-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .delete-selected-btn {
+    width: 100%;
+    margin-top: 0;
   }
   
   .stats-container {
@@ -1516,8 +1583,18 @@
     width: 100%;
   }
   
+  .status-actions {
+    width: 100%;
+    flex-direction: column;
+    gap: 12px;
+  }
+  
+  .delete-selected-btn {
+    width: 100%;
+  }
+  
   .filter-dropdown-container {
-    align-self: flex-start;
+    width: 100%;
   }
   
   /* Alerts section */

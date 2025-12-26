@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { toast } from "react-toastify";
 import { getAllContacts, getContactById, markAsRead, updateContactStatus, getUnreadCount, deleteContact } from "../../apis/contacts";
 import { formatDateTimeIST } from "../../utils/dateUtils";
+import ConfirmationModal from "../../components/ConfirmationModal/ConfirmationModal";
 import "./ContactMessage.css";
 
 // Import SVG icons from assets
@@ -12,9 +13,10 @@ import SubjectIcon from "../../assets/Appointment/treatment.svg";
 import MessageIcon from "../../assets/Appointment/notes.svg";
 import TimeIcon from "../../assets/Appointment/time.svg";
 import DateIcon from "../../assets/Appointment/calendar.svg";
+import dropdownIcon from "../../assets/Dropdownicon/angle-small-down (6) 1.svg";
 
 const ContactMessage: React.FC = () => {
-  const [checkedRows, setCheckedRows] = useState<number[]>([]);
+  const [checkedRows, setCheckedRows] = useState<string[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState("");
   const [dateFilter, setDateFilter] = useState<string>("");
@@ -26,6 +28,12 @@ const ContactMessage: React.FC = () => {
   const [totalContacts, setTotalContacts] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleteModalConfig, setDeleteModalConfig] = useState<{
+    type: "single" | "multiple";
+    id?: string;
+    count?: number;
+  } | null>(null);
 
   const [sortConfig, setSortConfig] = useState<{
     column: string;
@@ -236,23 +244,16 @@ const ContactMessage: React.FC = () => {
     { value: "this_year", label: "This Year" }
   ];
 
-  const handleCheckboxChange = (index: number) => {
+  const handleCheckboxChange = (id: string) => {
     setCheckedRows((prev) => {
-      if (prev.includes(index)) {
-        return prev.filter((i) => i !== index);
+      if (prev.includes(id)) {
+        return prev.filter((i) => i !== id);
       } else {
-        return [...prev, index];
+        return [...prev, id];
       }
     });
   };
 
-  const handleSelectAll = () => {
-    if (checkedRows.length === messages.length) {
-      setCheckedRows([]);
-    } else {
-      setCheckedRows(messages.map((_, index) => index));
-    }
-  };
 
   const handlePageChange = (page: number) => {
     if (page >= 1 && page <= totalPages) {
@@ -325,20 +326,67 @@ const ContactMessage: React.FC = () => {
   };
 
   const handleDeleteMessage = async (id: string) => {
-    if (!window.confirm("Are you sure you want to delete this contact message?")) {
+    setDeleteModalConfig({ type: "single", id });
+    setShowDeleteModal(true);
+  };
+
+  const confirmDeleteMessage = async () => {
+    if (!deleteModalConfig || deleteModalConfig.type !== "single" || !deleteModalConfig.id) {
       return;
     }
+
+    const { id } = deleteModalConfig;
+    setShowDeleteModal(false);
+    setDeleteModalConfig(null);
 
     try {
       // Actually delete the contact using the delete endpoint
       const result = await deleteContact(id);
       if (result.success) {
-        // Remove from local state
-        setMessages((prev) => prev.filter((msg) => msg.id !== id));
-        // Remove from checked rows
-        setCheckedRows((prev) => prev.filter((i) => i < messages.length && messages[i]?.id !== id));
-        // Update total count
-        setTotalContacts((prev) => Math.max(0, prev - 1));
+        // Refresh messages list from API to ensure data consistency
+        const refreshResult = await getAllContacts({
+          page: currentPage,
+          limit: 20,
+          search: searchQuery || undefined,
+          date_filter: dateFilter || undefined,
+          sort_by: 'createdAt',
+          sort_order: 'DESC'
+        });
+
+        if (refreshResult.success && refreshResult.data) {
+          // Map API response to frontend format
+          const mappedData = Array.isArray(refreshResult.data.contacts)
+            ? refreshResult.data.contacts.map((item: any) => {
+                // Convert UTC timestamp to IST before formatting
+                const { date: dateStr, time: timeStr } = formatDateTimeIST(item.createdAt);
+
+                return {
+                  id: item.id,
+                  patient: item.name,
+                  email: item.email,
+                  phone: item.phone,
+                  subject: item.subject,
+                  message: item.message,
+                  date: dateStr,
+                  time: timeStr,
+                  status: item.status || 'unread',
+                  responded: item.responded || 0,
+                  createdAt: item.createdAt,
+                };
+              })
+            : [];
+
+          setMessages(mappedData);
+
+          // Update pagination
+          if (refreshResult.data.pagination) {
+            setTotalPages(refreshResult.data.pagination.totalPages || 1);
+            setTotalContacts(refreshResult.data.pagination.total || 0);
+          }
+        }
+
+        // Clear checked rows since indices may have changed
+        setCheckedRows([]);
         toast.success("Contact message deleted successfully!");
       } else {
         toast.error(result.message || "Failed to delete contact message");
@@ -346,6 +394,98 @@ const ContactMessage: React.FC = () => {
     } catch (error: any) {
       console.error("Delete contact error:", error);
       toast.error(error.message || "Failed to delete contact message");
+    }
+  };
+
+  const handleDeleteSelected = async () => {
+    if (checkedRows.length === 0) {
+      toast.warning("Please select at least one contact message to delete");
+      return;
+    }
+
+    setDeleteModalConfig({ type: "multiple", count: checkedRows.length });
+    setShowDeleteModal(true);
+  };
+
+  const confirmDeleteSelected = async () => {
+    if (!deleteModalConfig || deleteModalConfig.type !== "multiple" || !deleteModalConfig.count) {
+      return;
+    }
+
+    setShowDeleteModal(false);
+    const count = deleteModalConfig.count;
+    setDeleteModalConfig(null);
+
+    setIsLoading(true);
+    const selectedMessageIds = checkedRows.filter((id) => id !== undefined);
+
+    if (selectedMessageIds.length === 0) {
+      toast.error("No valid contact messages selected");
+      setIsLoading(false);
+      return;
+    }
+
+    try {
+      // Delete all selected contacts in parallel
+      const deletePromises = selectedMessageIds.map((id) =>
+        deleteContact(id)
+      );
+      const results = await Promise.all(deletePromises);
+
+      // Check if all deletions were successful
+      const allSuccess = results.every((result) => result.success);
+      const failedCount = results.filter((result) => !result.success).length;
+
+      if (allSuccess) {
+        toast.success(
+          `${selectedMessageIds.length} contact message(s) deleted successfully!`
+        );
+        // Clear checked rows
+        setCheckedRows([]);
+        // Refresh contacts list
+        const result = await getAllContacts({
+          page: currentPage,
+          limit: 20,
+          search: searchQuery || undefined,
+          date_filter: dateFilter || undefined,
+          sort_by: 'createdAt',
+          sort_order: 'DESC'
+        });
+
+        if (result.success && result.data?.contacts) {
+          setMessages(result.data.contacts);
+          if (result.data.pagination) {
+            setTotalPages(result.data.pagination.totalPages || 1);
+            setTotalContacts(result.data.pagination.total || 0);
+          }
+        }
+      } else {
+        toast.error(
+          `Failed to delete ${failedCount} contact message(s). Please try again.`
+        );
+        // Still refresh the list to show current state
+        const result = await getAllContacts({
+          page: currentPage,
+          limit: 20,
+          search: searchQuery || undefined,
+          date_filter: dateFilter || undefined,
+          sort_by: 'createdAt',
+          sort_order: 'DESC'
+        });
+
+        if (result.success && result.data?.contacts) {
+          setMessages(result.data.contacts);
+          if (result.data.pagination) {
+            setTotalPages(result.data.pagination.totalPages || 1);
+            setTotalContacts(result.data.pagination.total || 0);
+          }
+        }
+      }
+    } catch (error: any) {
+      console.error("Delete selected contacts error:", error);
+      toast.error(error.message || "Failed to delete contact messages");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -412,6 +552,14 @@ const ContactMessage: React.FC = () => {
     return 0;
   });
 
+  const handleSelectAll = () => {
+    if (checkedRows.length === sortedMessages.length && sortedMessages.length > 0) {
+      setCheckedRows([]);
+    } else {
+      setCheckedRows(sortedMessages.map((msg) => msg.id));
+    }
+  };
+
   return (
     <div className="contact-message-container">
       <div className="main-content">
@@ -459,47 +607,63 @@ const ContactMessage: React.FC = () => {
                   />
                 </div>
 
-                {/* Date Filter Button with Calendar Icon - Right side of search */}
-                <div className="time-filter-container">
-                  <button
-                    className="time-filter-btn"
-                    onClick={() => setShowDateDropdown(!showDateDropdown)}
-                  >
-                    <div className="time-filter-content">
-                      <img
-                        src="/calendar.svg"
-                        alt="Calendar"
-                        className="calendar-icon"
-                        onError={(e) => {
-                          const target = e.target as HTMLImageElement;
-                          target.style.display = "none";
-                          const fallback = document.createElement("div");
-                          fallback.className = "calendar-icon-fallback";
-                          fallback.textContent = "📅";
-                          target.parentNode?.appendChild(fallback);
-                        }}
-                      />
-                      <span className="time-filter-text">
-                        {dateFilterOptions.find(opt => opt.value === dateFilter)?.label || "All Time"}
-                      </span>
-                      <span className="dropdown-arrow">▼</span>
-                    </div>
-                  </button>
-                  {showDateDropdown && (
-                    <div className="time-filter-dropdown">
-                      {dateFilterOptions.map((option) => (
-                        <button
-                          key={option.value}
-                          className={`time-filter-option ${
-                            dateFilter === option.value ? "selected" : ""
-                          }`}
-                          onClick={() => handleDateFilterChange(option.value)}
-                        >
-                          {option.label}
-                        </button>
-                      ))}
-                    </div>
+                <div className="status-actions">
+                  {checkedRows.length > 0 && (
+                    <button
+                      className="delete-selected-btn"
+                      onClick={handleDeleteSelected}
+                      disabled={isLoading}
+                    >
+                      {isLoading ? "Deleting..." : `Delete (${checkedRows.length})`}
+                    </button>
                   )}
+
+                  {/* Date Filter Button with Calendar Icon - Right side of search */}
+                  <div className="time-filter-container">
+                    <button
+                      className="time-filter-btn"
+                      onClick={() => setShowDateDropdown(!showDateDropdown)}
+                    >
+                      <div className="time-filter-content">
+                        <img
+                          src="/calendar.svg"
+                          alt="Calendar"
+                          className="calendar-icon"
+                          onError={(e) => {
+                            const target = e.target as HTMLImageElement;
+                            target.style.display = "none";
+                            const fallback = document.createElement("div");
+                            fallback.className = "calendar-icon-fallback";
+                            fallback.textContent = "📅";
+                            target.parentNode?.appendChild(fallback);
+                          }}
+                        />
+                        <span className="time-filter-text">
+                          {dateFilterOptions.find(opt => opt.value === dateFilter)?.label || "All Time"}
+                        </span>
+                        <img 
+                          src={dropdownIcon} 
+                          alt="Dropdown" 
+                          className="dropdown-arrow"
+                        />
+                      </div>
+                    </button>
+                    {showDateDropdown && (
+                      <div className="time-filter-dropdown">
+                        {dateFilterOptions.map((option) => (
+                          <button
+                            key={option.value}
+                            className={`time-filter-option ${
+                              dateFilter === option.value ? "selected" : ""
+                            }`}
+                            onClick={() => handleDateFilterChange(option.value)}
+                          >
+                            {option.label}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
@@ -513,7 +677,7 @@ const ContactMessage: React.FC = () => {
                         <div className="checkbox-header">
                           <div
                             className={`custom-checkbox ${
-                              checkedRows.length === messages.length
+                              checkedRows.length === sortedMessages.length && sortedMessages.length > 0
                                 ? "checked"
                                 : ""
                             }`}
@@ -855,15 +1019,15 @@ const ContactMessage: React.FC = () => {
                         </td>
                       </tr>
                     ) : (
-                      sortedMessages.map((message, index) => (
+                      sortedMessages.map((message) => (
                         <tr key={message.id} className="table-row">
                           <td className="table-cell">
                             <div className="checkbox-cell">
                               <div
                                 className={`custom-checkbox ${
-                                  checkedRows.includes(index) ? "checked" : ""
+                                  checkedRows.includes(message.id) ? "checked" : ""
                                 }`}
-                                onClick={() => handleCheckboxChange(index)}
+                                onClick={() => handleCheckboxChange(message.id)}
                               >
                                 <span className="checkmark">✓</span>
                               </div>
@@ -1170,6 +1334,34 @@ const ContactMessage: React.FC = () => {
           )}
         </div>
       </div>
+
+      {/* Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={showDeleteModal}
+        title={
+          deleteModalConfig?.type === "single"
+            ? "Delete Contact Message"
+            : "Delete Contact Messages"
+        }
+        message={
+          deleteModalConfig?.type === "single"
+            ? "Are you sure you want to delete this contact message? This action cannot be undone."
+            : `Are you sure you want to delete ${deleteModalConfig?.count || 0} contact message(s)? This action cannot be undone.`
+        }
+        onConfirm={() => {
+          if (deleteModalConfig?.type === "single") {
+            confirmDeleteMessage();
+          } else {
+            confirmDeleteSelected();
+          }
+        }}
+        onCancel={() => {
+          setShowDeleteModal(false);
+          setDeleteModalConfig(null);
+        }}
+        confirmText="Yes, Delete"
+        cancelText="Cancel"
+      />
     </div>
   );
 };

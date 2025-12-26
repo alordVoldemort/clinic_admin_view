@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { toast } from "react-toastify";
 import { getAllAppointments, deleteAppointment } from "../../apis/appointments";
+import dropdownIcon from "../../assets/Dropdownicon/angle-small-down (6) 1.svg";
+import ConfirmationModal from "../../components/ConfirmationModal/ConfirmationModal";
 import "./Appointments.css";
 
 const Appointments: React.FC = () => {
-  const [checkedRows, setCheckedRows] = useState<number[]>([0, 2, 4]);
+  const [checkedRows, setCheckedRows] = useState<string[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("All Status");
@@ -25,6 +27,12 @@ const Appointments: React.FC = () => {
   const [totalPages, setTotalPages] = useState(1);
   const [totalAppointments, setTotalAppointments] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleteModalConfig, setDeleteModalConfig] = useState<{
+    type: "single" | "multiple";
+    id?: string;
+    count?: number;
+  } | null>(null);
   //   {
   //     patient: "Rajesh Patil",
   //     email: "showtraders@yahoo.com",
@@ -81,27 +89,18 @@ const Appointments: React.FC = () => {
     { value: "this_month", label: "This Month" },
     { value: "last_month", label: "Last Month" },
     { value: "this_year", label: "This Year" },
-    { value: "custom_date", label: "Custom Date" },
-    { value: "custom_range", label: "Custom Range" },
   ];
 
-  const handleCheckboxChange = (index: number) => {
+  const handleCheckboxChange = (id: string) => {
     setCheckedRows((prev) => {
-      if (prev.includes(index)) {
-        return prev.filter((i) => i !== index);
+      if (prev.includes(id)) {
+        return prev.filter((i) => i !== id);
       } else {
-        return [...prev, index];
+        return [...prev, id];
       }
     });
   };
 
-  const handleSelectAll = () => {
-    if (checkedRows.length === appointments.length) {
-      setCheckedRows([]);
-    } else {
-      setCheckedRows(appointments.map((_, index) => index));
-    }
-  };
 
   const handlePageChange = (page: number) => {
     if (page >= 1 && page <= totalPages) {
@@ -109,10 +108,19 @@ const Appointments: React.FC = () => {
     }
   };
 
-  const handleDeleteAppointment = async (id: string, index: number) => {
-    if (!window.confirm("Are you sure you want to delete this appointment?")) {
+  const handleDeleteAppointment = async (id: string) => {
+    setDeleteModalConfig({ type: "single", id });
+    setShowDeleteModal(true);
+  };
+
+  const confirmDeleteAppointment = async () => {
+    if (!deleteModalConfig || deleteModalConfig.type !== "single" || !deleteModalConfig.id) {
       return;
     }
+
+    const { id } = deleteModalConfig;
+    setShowDeleteModal(false);
+    setDeleteModalConfig(null);
 
     try {
       const result = await deleteAppointment(id);
@@ -120,7 +128,7 @@ const Appointments: React.FC = () => {
         // Remove from local state immediately
         setAppointments((prev) => prev.filter((app) => app.id !== id));
         // Remove from checked rows if present
-        setCheckedRows((prev) => prev.filter((i) => i !== index));
+        setCheckedRows((prev) => prev.filter((checkedId) => checkedId !== id));
         // Update total count
         setTotalAppointments((prev) => Math.max(0, prev - 1));
         toast.success("Appointment deleted successfully!");
@@ -130,6 +138,128 @@ const Appointments: React.FC = () => {
     } catch (error: any) {
       console.error("Delete appointment error:", error);
       toast.error(error.message || "Failed to delete appointment");
+    }
+  };
+
+  const handleDeleteSelected = async () => {
+    if (checkedRows.length === 0) {
+      toast.warning("Please select at least one appointment to delete");
+      return;
+    }
+
+    setDeleteModalConfig({ type: "multiple", count: checkedRows.length });
+    setShowDeleteModal(true);
+  };
+
+  const confirmDeleteSelected = async () => {
+    if (!deleteModalConfig || deleteModalConfig.type !== "multiple" || !deleteModalConfig.count) {
+      return;
+    }
+
+    setShowDeleteModal(false);
+    const count = deleteModalConfig.count;
+    setDeleteModalConfig(null);
+
+    setIsLoading(true);
+    const selectedAppointmentIds = checkedRows.filter((id) => id !== undefined);
+
+    if (selectedAppointmentIds.length === 0) {
+      toast.error("No valid appointments selected");
+      setIsLoading(false);
+      return;
+    }
+
+    try {
+      // Delete all selected appointments in parallel
+      const deletePromises = selectedAppointmentIds.map((id) =>
+        deleteAppointment(id)
+      );
+      const results = await Promise.all(deletePromises);
+
+      // Check if all deletions were successful
+      const allSuccess = results.every((result) => result.success);
+      const failedCount = results.filter((result) => !result.success).length;
+
+      if (allSuccess) {
+        toast.success(
+          `${selectedAppointmentIds.length} appointment(s) deleted successfully!`
+        );
+        // Clear checked rows
+        setCheckedRows([]);
+        // Refresh appointments list
+        const dateFilterParams: any = {
+          date_filter: dateFilter,
+        };
+
+        if (dateFilter === "custom_date" && customDate) {
+          dateFilterParams.date = customDate;
+        } else if (dateFilter === "custom_range" && fromDate && toDate) {
+          dateFilterParams.from_date = fromDate;
+          dateFilterParams.to_date = toDate;
+        }
+
+        const appointmentsResult = await getAllAppointments({
+          page: currentPage,
+          limit: 20,
+          status: statusFilter !== "All Status" ? statusFilter : undefined,
+          search: searchQuery || undefined,
+          ...dateFilterParams,
+        });
+
+        if (
+          appointmentsResult.success &&
+          appointmentsResult.data?.appointments
+        ) {
+          setAppointments(appointmentsResult.data.appointments);
+          if (appointmentsResult.data.pagination) {
+            setTotalPages(appointmentsResult.data.pagination.totalPages || 1);
+            setTotalAppointments(
+              appointmentsResult.data.pagination.total || 0
+            );
+          }
+        }
+      } else {
+        toast.error(
+          `Failed to delete ${failedCount} appointment(s). Please try again.`
+        );
+        // Still refresh the list to show current state
+        const dateFilterParams: any = {
+          date_filter: dateFilter,
+        };
+
+        if (dateFilter === "custom_date" && customDate) {
+          dateFilterParams.date = customDate;
+        } else if (dateFilter === "custom_range" && fromDate && toDate) {
+          dateFilterParams.from_date = fromDate;
+          dateFilterParams.to_date = toDate;
+        }
+
+        const appointmentsResult = await getAllAppointments({
+          page: currentPage,
+          limit: 20,
+          status: statusFilter !== "All Status" ? statusFilter : undefined,
+          search: searchQuery || undefined,
+          ...dateFilterParams,
+        });
+
+        if (
+          appointmentsResult.success &&
+          appointmentsResult.data?.appointments
+        ) {
+          setAppointments(appointmentsResult.data.appointments);
+          if (appointmentsResult.data.pagination) {
+            setTotalPages(appointmentsResult.data.pagination.totalPages || 1);
+            setTotalAppointments(
+              appointmentsResult.data.pagination.total || 0
+            );
+          }
+        }
+      }
+    } catch (error: any) {
+      console.error("Delete selected appointments error:", error);
+      toast.error(error.message || "Failed to delete appointments");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -174,12 +304,13 @@ const Appointments: React.FC = () => {
 
   // Filter appointments based on search query and status filter
   const filteredAppointments = appointments.filter((appointment) => {
+    const searchLower = searchQuery.toLowerCase();
     const matchesSearch =
-      appointment.patient.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      appointment.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      appointment.doctor.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      appointment.phone.includes(searchQuery) ||
-      appointment.type.toLowerCase().includes(searchQuery.toLowerCase());
+      (appointment.patient?.toLowerCase() || "").includes(searchLower) ||
+      (appointment.email?.toLowerCase() || "").includes(searchLower) ||
+      (appointment.doctor?.toLowerCase() || "").includes(searchLower) ||
+      (appointment.phone || "").includes(searchQuery) ||
+      (appointment.type?.toLowerCase() || "").includes(searchLower);
 
     const matchesStatus =
       statusFilter === "All Status" || appointment.status === statusFilter;
@@ -202,6 +333,14 @@ const Appointments: React.FC = () => {
 
     return 0;
   });
+
+  const handleSelectAll = () => {
+    if (checkedRows.length === sortedAppointments.length && sortedAppointments.length > 0) {
+      setCheckedRows([]);
+    } else {
+      setCheckedRows(sortedAppointments.map((app) => app.id));
+    }
+  };
 
   useEffect(() => {
     const fetchAppointments = async () => {
@@ -271,7 +410,15 @@ const Appointments: React.FC = () => {
     };
 
     fetchAppointments();
-  }, [currentPage, statusFilter, searchQuery, dateFilter, customDate, fromDate, toDate]);
+  }, [
+    currentPage,
+    statusFilter,
+    searchQuery,
+    dateFilter,
+    customDate,
+    fromDate,
+    toDate,
+  ]);
 
   return (
     <div className="appointments-container">
@@ -306,9 +453,14 @@ const Appointments: React.FC = () => {
                       }}
                     />
                     <span className="time-filter-text">
-                      {dateFilterOptions.find((opt) => opt.value === dateFilter)?.label || "Today"}
+                      {dateFilterOptions.find((opt) => opt.value === dateFilter)
+                        ?.label || "Today"}
                     </span>
-                    <span className="dropdown-arrow">▼</span>
+                    <img 
+                      src={dropdownIcon} 
+                      alt="Dropdown" 
+                      className="dropdown-arrow"
+                    />
                   </div>
                 </button>
                 {showDateDropdown && (
@@ -345,9 +497,22 @@ const Appointments: React.FC = () => {
               )}
               {/* Custom Range Inputs */}
               {dateFilter === "custom_range" && (
-                <div style={{ marginTop: "10px", marginLeft: "20px", display: "flex", gap: "10px" }}>
+                <div
+                  style={{
+                    marginTop: "10px",
+                    marginLeft: "20px",
+                    display: "flex",
+                    gap: "10px",
+                  }}
+                >
                   <div>
-                    <label style={{ display: "block", marginBottom: "4px", fontSize: "12px" }}>
+                    <label
+                      style={{
+                        display: "block",
+                        marginBottom: "4px",
+                        fontSize: "12px",
+                      }}
+                    >
                       From:
                     </label>
                     <input
@@ -358,7 +523,9 @@ const Appointments: React.FC = () => {
                         setFromDate(newFromDate);
                         // Validate: from_date should not be greater than to_date
                         if (toDate && newFromDate > toDate) {
-                          toast.error("From date cannot be greater than To date");
+                          toast.error(
+                            "From date cannot be greater than To date"
+                          );
                         }
                       }}
                       style={{
@@ -370,7 +537,13 @@ const Appointments: React.FC = () => {
                     />
                   </div>
                   <div>
-                    <label style={{ display: "block", marginBottom: "4px", fontSize: "12px" }}>
+                    <label
+                      style={{
+                        display: "block",
+                        marginBottom: "4px",
+                        fontSize: "12px",
+                      }}
+                    >
                       To:
                     </label>
                     <input
@@ -430,32 +603,44 @@ const Appointments: React.FC = () => {
                   />
                 </div>
 
-                <div className="filter-dropdown-container">
-                  <div className="filter-select-wrapper">
-                    <img
-                      src="./filter-icon.svg"
-                      alt="Filter"
-                      className="filter-icon"
-                      onError={(e) => {
-                        const target = e.target as HTMLImageElement;
-                        target.style.display = "none";
-                        const fallback = document.createElement("span");
-                        fallback.className = "filter-icon-fallback";
-                        fallback.textContent = "";
-                        target.parentNode?.appendChild(fallback);
-                      }}
-                    />
-                    <select
-                      value={statusFilter}
-                      onChange={handleStatusFilterChange}
-                      className="filter-select"
+                <div className="status-actions">
+                  {checkedRows.length > 0 && (
+                    <button
+                      className="delete-selected-btn"
+                      onClick={handleDeleteSelected}
+                      disabled={isLoading}
                     >
-                      {statusOptions.map((option) => (
-                        <option key={option} value={option}>
-                          {option}
-                        </option>
-                      ))}
-                    </select>
+                      {isLoading ? "Deleting..." : `Delete (${checkedRows.length})`}
+                    </button>
+                  )}
+
+                  <div className="filter-dropdown-container">
+                    <div className="filter-select-wrapper">
+                      <img
+                        src="./filter-icon.svg"
+                        alt="Filter"
+                        className="filter-icon"
+                        onError={(e) => {
+                          const target = e.target as HTMLImageElement;
+                          target.style.display = "none";
+                          const fallback = document.createElement("span");
+                          fallback.className = "filter-icon-fallback";
+                          fallback.textContent = "";
+                          target.parentNode?.appendChild(fallback);
+                        }}
+                      />
+                      <select
+                        value={statusFilter}
+                        onChange={handleStatusFilterChange}
+                        className="filter-select"
+                      >
+                        {statusOptions.map((option) => (
+                          <option key={option} value={option}>
+                            {option}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -469,7 +654,7 @@ const Appointments: React.FC = () => {
                         <div className="checkbox-header">
                           <div
                             className={`custom-checkbox ${
-                              checkedRows.length === appointments.length
+                              checkedRows.length === sortedAppointments.length && sortedAppointments.length > 0
                                 ? "checked"
                                 : ""
                             }`}
@@ -817,15 +1002,15 @@ const Appointments: React.FC = () => {
                         </td>
                       </tr>
                     ) : (
-                      sortedAppointments.map((appointment, index) => (
-                        <tr key={appointment.id || index}>
+                      sortedAppointments.map((appointment) => (
+                        <tr key={appointment.id}>
                           <td>
                             <div className="checkbox-cell">
                               <div
                                 className={`custom-checkbox ${
-                                  checkedRows.includes(index) ? "checked" : ""
+                                  checkedRows.includes(appointment.id) ? "checked" : ""
                                 }`}
-                                onClick={() => handleCheckboxChange(index)}
+                                onClick={() => handleCheckboxChange(appointment.id)}
                               >
                                 <span className="checkmark">✓</span>
                               </div>
@@ -848,7 +1033,7 @@ const Appointments: React.FC = () => {
                           <td>{appointment.phone}</td>
                           <td>
                             <span
-                              className={`status-badge status-${appointment.status.toLowerCase()}`}
+                              className={`status-badge status-${appointment.status?.toLowerCase() || ""}`}
                             >
                               {appointment.status}
                             </span>
@@ -861,10 +1046,7 @@ const Appointments: React.FC = () => {
                                 className="delete-action-icon"
                                 onClick={() => {
                                   if (appointment.id) {
-                                    handleDeleteAppointment(
-                                      appointment.id,
-                                      index
-                                    );
+                                    handleDeleteAppointment(appointment.id);
                                   }
                                 }}
                                 onError={(e) => {
@@ -954,6 +1136,34 @@ const Appointments: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={showDeleteModal}
+        title={
+          deleteModalConfig?.type === "single"
+            ? "Delete Appointment"
+            : "Delete Appointments"
+        }
+        message={
+          deleteModalConfig?.type === "single"
+            ? "Are you sure you want to delete this appointment? This action cannot be undone."
+            : `Are you sure you want to delete ${deleteModalConfig?.count || 0} appointment(s)? This action cannot be undone.`
+        }
+        onConfirm={() => {
+          if (deleteModalConfig?.type === "single") {
+            confirmDeleteAppointment();
+          } else {
+            confirmDeleteSelected();
+          }
+        }}
+        onCancel={() => {
+          setShowDeleteModal(false);
+          setDeleteModalConfig(null);
+        }}
+        confirmText="Yes, Delete"
+        cancelText="Cancel"
+      />
     </div>
   );
 };

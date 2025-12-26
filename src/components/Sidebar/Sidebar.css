@@ -5,8 +5,8 @@
   top: 0;
   width: 271px;
   height: 100vh;
-  background: #FFFFFF;
-  border-right: 1px solid #EAECF0;
+  background: #ffffff;
+  border-right: 1px solid #eaecf0;
   z-index: 1000;
   display: flex;
   flex-direction: column;
@@ -30,7 +30,7 @@
 
 .logo-section {
   position: absolute;
-  top: 40px;
+  top: 18px;
   left: 0;
   right: 0;
   display: flex;
@@ -63,9 +63,9 @@
 }
 
 .logo-text {
-  font-family: 'Poppins', sans-serif;
+  font-family: "Poppins", sans-serif;
   font-weight: 500;
-  color: #0057B7;
+  color: #0057b7;
   font-size: 15px;
   margin-top: 2px;
   text-align: center;
@@ -75,9 +75,10 @@
 .sidebar-inner {
   position: absolute;
   width: 207px;
-  height: calc(100vh - 200px); 
+  height: calc(100vh - 200px);
   top: 135px;
-  left: 10px;
+  left: 50%;
+  transform: translateX(-50%);
   border-radius: 12px;
   display: flex;
   flex-direction: column;
@@ -110,11 +111,11 @@
 }
 
 .nav-item:hover {
-  background: #EFF6FF;
+  background: #eff6ff;
 }
 
 .nav-item.active {
-  background: #155DFC;
+  background: #eff6ff;
 }
 
 /* Navigation Icon */
@@ -141,24 +142,25 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  font-family: 'Poppins', sans-serif;
+  font-family: "Poppins", sans-serif;
   font-size: 12px;
   font-weight: 600;
 }
 
 /* Active state icon styling */
 .nav-item.active .nav-icon {
-  filter: brightness(0) invert(1);
+  filter: brightness(0) saturate(100%) invert(24%) sepia(95%) saturate(2476%)
+    hue-rotate(210deg) brightness(93%) contrast(92%);
 }
 
 .nav-item.active .nav-icon-fallback {
-  background: white;
-  color: #155DFC;
+  background: #0f5cea;
+  color: white;
 }
 
 /* Navigation Label */
 .nav-label {
-  font-family: 'Poppins', sans-serif;
+  font-family: "Poppins", sans-serif;
   font-size: 14px;
   font-weight: 500;
   color: #344054;
@@ -167,7 +169,7 @@
 }
 
 .nav-item.active .nav-label {
-  color: #FFFFFF;
+  color: #0f5cea;
 }
 
 /* Tablet/iPad and Mobile (≤1024px) - Sidebar as overlay */
@@ -181,26 +183,27 @@
     position: fixed;
     left: 0;
   }
-  
+
   /* Show sidebar when isOpen === true */
   .sidebar.open {
     transform: translateX(0);
   }
-  
+
   .sidebar-inner {
     width: 240px;
-    left: 20px;
+    left: 50%;
+    transform: translateX(-50%);
   }
-  
+
   .sidebar-logo {
     width: 45px;
     height: auto;
   }
-  
+
   .logo-text {
     font-size: 13px;
   }
-  
+
   .nav-label {
     font-size: 14px;
   }
@@ -211,21 +214,22 @@
   .sidebar {
     width: 240px;
   }
-  
+
   .sidebar-inner {
     width: 180px;
-    left: 30px;
+    left: 50%;
+    transform: translateX(-50%);
   }
-  
+
   .sidebar-logo {
     width: 47px;
     height: 32px;
   }
-  
+
   .logo-text {
     font-size: 15px;
   }
-  
+
   .nav-label {
     font-size: 13px;
   }
@@ -236,34 +240,35 @@
   .sidebar {
     width: 280px;
   }
-  
+
   .sidebar-inner {
     width: 240px;
-    left: 20px;
+    left: 50%;
+    transform: translateX(-50%);
     top: 120px;
     height: calc(100vh - 160px);
   }
-  
+
   .sidebar-logo {
     width: 40px;
     height: auto;
   }
-  
+
   .logo-text {
     font-size: 12px;
   }
-  
+
   .logo-section {
-    top: 20px;
+    top: 16px;
     padding: 0 20px;
   }
-  
+
   /* Ensure nav labels are visible on mobile */
   .nav-label {
     display: block !important;
     font-size: 15px;
   }
-  
+
   .nav-item {
     padding: 14px 12px;
   }
@@ -274,12 +279,13 @@
   .sidebar {
     width: 260px;
   }
-  
+
   .sidebar-inner {
     width: 220px;
-    left: 20px;
+    left: 50%;
+    transform: translateX(-50%);
   }
-  
+
   .nav-label {
     font-size: 14px;
   }
@@ -290,16 +296,17 @@
   .sidebar {
     width: 240px;
   }
-  
+
   .sidebar-inner {
     width: 200px;
-    left: 20px;
+    left: 50%;
+    transform: translateX(-50%);
   }
-  
+
   .nav-label {
     font-size: 13px;
   }
-  
+
   .nav-item {
     padding: 12px 10px;
     gap: 10px;
