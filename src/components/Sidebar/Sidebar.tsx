@@ -60,7 +60,14 @@ const Sidebar: React.FC<SidebarProps> = ({
     <aside className={`sidebar ${isOpen ? "open" : ""}`}>
       <div className="sidebar-outer">
         <div className="logo-section">
-          <NavLink to="/dashboard" className="logo-container" onClick={onClose}>
+          <NavLink 
+            to="/dashboard" 
+            className="logo-container" 
+            onClick={() => {
+              window.scrollTo({ top: 0, left: 0, behavior: 'smooth' });
+              onClose();
+            }}
+          >
             <img
               src={logo}
               alt="Nirmal Health Care"
@@ -116,7 +123,10 @@ const Sidebar: React.FC<SidebarProps> = ({
                   className={({ isActive }) =>
                     `nav-item ${isActive ? "active" : ""}`
                   }
-                  onClick={onClose}
+                  onClick={() => {
+                    window.scrollTo({ top: 0, left: 0, behavior: 'smooth' });
+                    onClose();
+                  }}
                 >
                   <div className="nav-icon-wrapper">
                     <img

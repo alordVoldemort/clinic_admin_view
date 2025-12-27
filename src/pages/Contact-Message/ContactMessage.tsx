@@ -15,6 +15,28 @@ import TimeIcon from "../../assets/Appointment/time.svg";
 import DateIcon from "../../assets/Appointment/calendar.svg";
 import dropdownIcon from "../../assets/Dropdownicon/angle-small-down (6) 1.svg";
 
+// Reusable mapper function to ensure consistent contact shape
+const mapContacts = (contacts: any[]) => {
+  return contacts.map((item: any) => {
+    // Convert UTC timestamp to IST before formatting
+    const { date: dateStr, time: timeStr } = formatDateTimeIST(item.createdAt);
+
+    return {
+      id: item.id,
+      patient: item.name,
+      email: item.email,
+      phone: item.phone,
+      subject: item.subject,
+      message: item.message,
+      date: dateStr,
+      time: timeStr,
+      status: item.status || 'unread',
+      responded: item.responded || 0,
+      createdAt: item.createdAt,
+    };
+  });
+};
+
 const ContactMessage: React.FC = () => {
   const [checkedRows, setCheckedRows] = useState<string[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
@@ -58,26 +80,9 @@ const ContactMessage: React.FC = () => {
         });
 
         if (result.success && result.data) {
-          // Map API response to frontend format
+          // Map API response to frontend format using reusable mapper
           const mappedData = Array.isArray(result.data.contacts)
-            ? result.data.contacts.map((item: any) => {
-                // Convert UTC timestamp to IST before formatting
-                const { date: dateStr, time: timeStr } = formatDateTimeIST(item.createdAt);
-
-                return {
-                  id: item.id,
-                  patient: item.name,
-                  email: item.email,
-                  phone: item.phone,
-                  subject: item.subject,
-                  message: item.message,
-                  date: dateStr,
-                  time: timeStr,
-                  status: item.status || 'unread',
-                  responded: item.responded || 0,
-                  createdAt: item.createdAt,
-                };
-              })
+            ? mapContacts(result.data.contacts)
             : [];
 
           setMessages(mappedData);
@@ -354,26 +359,9 @@ const ContactMessage: React.FC = () => {
         });
 
         if (refreshResult.success && refreshResult.data) {
-          // Map API response to frontend format
+          // Map API response to frontend format using reusable mapper
           const mappedData = Array.isArray(refreshResult.data.contacts)
-            ? refreshResult.data.contacts.map((item: any) => {
-                // Convert UTC timestamp to IST before formatting
-                const { date: dateStr, time: timeStr } = formatDateTimeIST(item.createdAt);
-
-                return {
-                  id: item.id,
-                  patient: item.name,
-                  email: item.email,
-                  phone: item.phone,
-                  subject: item.subject,
-                  message: item.message,
-                  date: dateStr,
-                  time: timeStr,
-                  status: item.status || 'unread',
-                  responded: item.responded || 0,
-                  createdAt: item.createdAt,
-                };
-              })
+            ? mapContacts(refreshResult.data.contacts)
             : [];
 
           setMessages(mappedData);
@@ -442,9 +430,11 @@ const ContactMessage: React.FC = () => {
         );
         // Clear checked rows
         setCheckedRows([]);
+        // Reset to first page after successful deletion
+        setCurrentPage(1);
         // Refresh contacts list
         const result = await getAllContacts({
-          page: currentPage,
+          page: 1, // Use page 1 after reset
           limit: 20,
           search: searchQuery || undefined,
           date_filter: dateFilter || undefined,
@@ -453,7 +443,7 @@ const ContactMessage: React.FC = () => {
         });
 
         if (result.success && result.data?.contacts) {
-          setMessages(result.data.contacts);
+          setMessages(mapContacts(result.data.contacts));
           if (result.data.pagination) {
             setTotalPages(result.data.pagination.totalPages || 1);
             setTotalContacts(result.data.pagination.total || 0);
@@ -474,7 +464,7 @@ const ContactMessage: React.FC = () => {
         });
 
         if (result.success && result.data?.contacts) {
-          setMessages(result.data.contacts);
+          setMessages(mapContacts(result.data.contacts));
           if (result.data.pagination) {
             setTotalPages(result.data.pagination.totalPages || 1);
             setTotalContacts(result.data.pagination.total || 0);

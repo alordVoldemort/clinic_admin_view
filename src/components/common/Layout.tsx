@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { isAuthenticated, verifyToken } from '../../apis/admin';
 import Sidebar from '../Sidebar/Sidebar';
 import Navbar from '../Navbar/Navbar';
@@ -13,6 +13,12 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isVerifying, setIsVerifying] = useState(true);
   const navigate = useNavigate();
+  const location = useLocation();
+
+  // Scroll to top when route changes
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'smooth' });
+  }, [location.pathname]);
 
   useEffect(() => {
     const checkAuth = async () => {

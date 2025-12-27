@@ -5,6 +5,26 @@ import dropdownIcon from "../../assets/Dropdownicon/angle-small-down (6) 1.svg";
 import ConfirmationModal from "../../components/ConfirmationModal/ConfirmationModal";
 import "./Appointments.css";
 
+// Reusable mapper function to ensure consistent appointment shape
+const mapAppointments = (appointments: any[]) => {
+  return appointments.map((item: any) => ({
+    id: item.id,
+    patient: item.name,
+    email: item.email,
+    doctor: "Dr. Nitin Darda", // Default doctor name (can be updated if API provides it)
+    date: item.date,
+    time: item.time,
+    type: item.service,
+    phone: item.phone,
+    status: item.status
+      ? item.status.charAt(0).toUpperCase() + item.status.slice(1)
+      : "Tentative",
+    notes: item.notes || "",
+    amount: item.amount || "0.00",
+    is_paid: item.is_paid || 0,
+  }));
+};
+
 const Appointments: React.FC = () => {
   const [checkedRows, setCheckedRows] = useState<string[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
@@ -186,6 +206,8 @@ const Appointments: React.FC = () => {
         );
         // Clear checked rows
         setCheckedRows([]);
+        // Reset to first page after successful deletion
+        setCurrentPage(1);
         // Refresh appointments list
         const dateFilterParams: any = {
           date_filter: dateFilter,
@@ -199,7 +221,7 @@ const Appointments: React.FC = () => {
         }
 
         const appointmentsResult = await getAllAppointments({
-          page: currentPage,
+          page: 1, // Use page 1 after reset
           limit: 20,
           status: statusFilter !== "All Status" ? statusFilter : undefined,
           search: searchQuery || undefined,
@@ -210,7 +232,7 @@ const Appointments: React.FC = () => {
           appointmentsResult.success &&
           appointmentsResult.data?.appointments
         ) {
-          setAppointments(appointmentsResult.data.appointments);
+          setAppointments(mapAppointments(appointmentsResult.data.appointments));
           if (appointmentsResult.data.pagination) {
             setTotalPages(appointmentsResult.data.pagination.totalPages || 1);
             setTotalAppointments(
@@ -246,7 +268,7 @@ const Appointments: React.FC = () => {
           appointmentsResult.success &&
           appointmentsResult.data?.appointments
         ) {
-          setAppointments(appointmentsResult.data.appointments);
+          setAppointments(mapAppointments(appointmentsResult.data.appointments));
           if (appointmentsResult.data.pagination) {
             setTotalPages(appointmentsResult.data.pagination.totalPages || 1);
             setTotalAppointments(
@@ -372,24 +394,9 @@ const Appointments: React.FC = () => {
         });
 
         if (result.success && result.data) {
-          // Map API response to frontend format
+          // Map API response to frontend format using reusable mapper
           const mappedData = Array.isArray(result.data.appointments)
-            ? result.data.appointments.map((item: any) => ({
-                id: item.id,
-                patient: item.name,
-                email: item.email,
-                doctor: "Dr. Nitin Darda", // Default doctor name (can be updated if API provides it)
-                date: item.date,
-                time: item.time,
-                type: item.service,
-                phone: item.phone,
-                status: item.status
-                  ? item.status.charAt(0).toUpperCase() + item.status.slice(1)
-                  : "Pending",
-                notes: item.notes || "",
-                amount: item.amount || "0.00",
-                is_paid: item.is_paid || 0,
-              }))
+            ? mapAppointments(result.data.appointments)
             : [];
 
           setAppointments(mappedData);
