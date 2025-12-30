@@ -498,6 +498,19 @@ const Dashboard: React.FC = () => {
     });
   };
 
+  const formatAppointmentDate = (dateString: string) => {
+  if (!dateString) return "-";
+
+  const date = new Date(dateString);
+  if (isNaN(date.getTime())) return dateString;
+
+  const day = String(date.getDate()).padStart(2, "0");
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const year = date.getFullYear();
+
+  return `${day}/${month}/${year}`;
+};
+
   // Filter appointments based on search query and status filter
   const filteredAppointments = appointments.filter((appointment) => {
     const searchLower = searchQuery.toLowerCase();
@@ -1140,7 +1153,7 @@ const Dashboard: React.FC = () => {
                                 </div>
                               </td>
                               <td>{appointment.doctor}</td>
-                              <td>{appointment.date}</td>
+                              <td>{formatAppointmentDate(appointment.date)}</td>
                               <td>{appointment.time}</td>
                               <td>{appointment.type}</td>
                               <td>{appointment.phone}</td>
