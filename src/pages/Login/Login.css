@@ -37,7 +37,7 @@
   width: 180px;
   height: 78px;
   object-fit: contain;
-  margin-top: 10px;
+  margin-bottom: -10px; 
 }
 
 .login-title {
