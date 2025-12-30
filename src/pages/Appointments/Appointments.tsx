@@ -337,6 +337,21 @@ const Appointments: React.FC = () => {
   return `${day}/${month}/${year}`;
 };
 
+const formatAppointmentTime = (timeString: string) => {
+  if (!timeString) return "-";
+
+  const [hoursStr, minutesStr] = timeString.split(":");
+  let hours = parseInt(hoursStr, 10);
+  const minutes = minutesStr || "00";
+
+  if (isNaN(hours)) return timeString;
+
+  const ampm = hours >= 12 ? "PM" : "AM";
+  hours = hours % 12 || 12;
+
+  return `${hours}:${minutes} ${ampm}`;
+};
+
   // Filter appointments based on search query and status filter
   const filteredAppointments = appointments.filter((appointment) => {
     const searchLower = searchQuery.toLowerCase();
@@ -1048,7 +1063,8 @@ const Appointments: React.FC = () => {
                           </td>
                           <td>{appointment.doctor}</td>
                           <td>{formatAppointmentDate(appointment.date)}</td>
-                          <td>{appointment.time}</td>
+                          <td>{formatAppointmentTime(appointment.time)}</td>
+
                           <td>{appointment.type}</td>
                           <td>{appointment.phone}</td>
                           <td>

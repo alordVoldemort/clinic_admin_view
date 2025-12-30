@@ -36,6 +36,9 @@ const Testimonials: React.FC = () => {
     fetchTestimonials();
   }, [currentPage, searchQuery]);
 
+ const FEEDBACK_CHAR_LIMIT = 200;
+ const [fileError, setFileError] = useState<string | null>(null);
+
   const fetchTestimonials = async () => {
     setIsLoading(true);
     try {
@@ -114,27 +117,74 @@ const Testimonials: React.FC = () => {
   };
 
   const handleInputChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) => {
-    const { name, value } = e.target;
-    setNewTestimonial((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-  };
+  e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+) => {
+  const { name, value } = e.target;
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      setNewTestimonial((prev) => ({
-        ...prev,
-        photo: e.target.files![0],
-      }));
-    }
-  };
+  // ✅ Limit feedback characters
+  if (name === "feedback" && value.length > FEEDBACK_CHAR_LIMIT) {
+    return;
+  }
+
+  setNewTestimonial((prev) => ({
+    ...prev,
+    [name]: value,
+  }));
+};
+
+
+  // Add these constants at the top of your component
+const MAX_FILE_SIZE = 2 * 1024 * 1024; // 2 MB in bytes
+const ALLOWED_TYPES = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
+
+const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  setFileError(null); // reset previous error
+
+  if (!e.target.files || !e.target.files[0]) return;
+
+  const file = e.target.files[0];
+
+  // Size validation
+  if (file.size > MAX_FILE_SIZE) {
+    setFileError(`Image too large: ${(file.size / (1024*1024)).toFixed(2)} MB (max 2 MB)`);
+    e.target.value = ""; 
+    setNewTestimonial((prev) => ({ ...prev, photo: null }));
+    return;
+  }
+
+  // Format validation
+  if (!ALLOWED_TYPES.includes(file.type)) {
+    setFileError("Invalid format. Only JPG, JPEG, PNG, WEBP allowed");
+    e.target.value = ""; 
+    setNewTestimonial((prev) => ({ ...prev, photo: null }));
+    return;
+  }
+
+  // Valid file
+  setNewTestimonial((prev) => ({ ...prev, photo: file }));
+};
+
+
+
 
   const handleSubmitTestimonial = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
+
+    if (newTestimonial.feedback.length < 20) {
+  toast.error("Feedback must be at least 20 characters long");
+  setIsSubmitting(false);
+  return;
+}
+
+if (newTestimonial.photo) {
+  if (newTestimonial.photo.size > MAX_FILE_SIZE) {
+    toast.error("Image size must be less than or equal to 2 MB");
+    setIsSubmitting(false);
+    return;
+  }
+}
+
 
     try {
       // Create FormData for multipart/form-data
@@ -551,11 +601,15 @@ const Testimonials: React.FC = () => {
                       </div>
                     )}
 
-                    {/* ✅ ADD THIS BELOW */}
-    <div className="upload-guidelines">
-      Supported formats: JPG, JPEG, PNG, WEBP<br />
-      Maximum file size: 2 MB
-    </div>
+                    <div className="upload-guidelines">
+  {fileError && <div className="file-error" style={{ color: 'red', marginBottom: '5px' }}>{fileError}</div>}
+  Supported formats: JPG, JPEG, PNG, WEBP<br />
+  Maximum file size: 2 MB
+  {newTestimonial.photo && !fileError && (
+    <div>Selected file: {newTestimonial.photo.name} ({(newTestimonial.photo.size / (1024*1024)).toFixed(2)} MB)</div>
+  )}
+</div>
+
  
                   </div>
                 </div>
@@ -592,13 +646,19 @@ const Testimonials: React.FC = () => {
               <div className="feedback-section">
                 <div className="feedback-label">Client feedback</div>
                 <textarea
-                  name="feedback"
-                  className="feedback-textarea"
-                  value={newTestimonial.feedback}
-                  onChange={handleInputChange}
-                  rows={4}
-                  required
-                />
+  name="feedback"
+  className="feedback-textarea"
+  value={newTestimonial.feedback}
+  onChange={handleInputChange}
+  rows={4}
+  maxLength={FEEDBACK_CHAR_LIMIT}
+  placeholder="Write client feedback (max 200 characters)"
+  required
+/>
+<div className="char-count">
+  {newTestimonial.feedback.length}/{FEEDBACK_CHAR_LIMIT} characters
+</div>
+
               </div>
 
               <div className="modal-actions">
