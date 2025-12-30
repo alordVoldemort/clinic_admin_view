@@ -4,9 +4,9 @@ import { login } from "../../apis/admin";
 import "./Login.css";
 
 const Login: React.FC = () => {
-  // Hardcoded admin credentials for testing
-  const [email, setEmail] = useState("admin@clinic.com");
-  const [password, setPassword] = useState("admin123");
+  // Default admin credentials
+  const [email, setEmail] = useState("admin@nirmalhealthcare.co.in");
+  const [password, setPassword] = useState("Admin@123");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");

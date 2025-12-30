@@ -358,7 +358,7 @@ const Testimonials: React.FC = () => {
                         // Get base URL for image
                         const BASE_URL =
                           process.env.REACT_APP_BASE_URL ||
-                          "http://localhost:80/Clinic_Website_Backend_PHP-main";
+                          "https://nirmalhealthcare.co.in";
                         const imageUrl = testimonial.photo
                           ? testimonial.photo.startsWith("http")
                             ? testimonial.photo

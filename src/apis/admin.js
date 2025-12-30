@@ -1,4 +1,5 @@
 import apiClient from './axios';
+import { API_CONFIG } from './config';
 
 /**
  * Admin API Service
@@ -14,12 +15,12 @@ import apiClient from './axios';
  */
 export const login = async (credentials) => {
   try {
-    const response = await apiClient.post('/api/admin/login', credentials);
+    const response = await apiClient.post(API_CONFIG.ENDPOINTS.AUTH.LOGIN, credentials);
     
     // Store token and admin data in localStorage
     if (response.data.success && response.data.data) {
       localStorage.setItem('adminToken', response.data.data.token);
-      localStorage.setItem('adminData', JSON.stringify(response.data.data.admin));
+      localStorage.setItem('adminData', JSON.stringify(response.data.data.user));
     }
     
     return response.data;
@@ -34,7 +35,7 @@ export const login = async (credentials) => {
  */
 export const logout = async () => {
   try {
-    const response = await apiClient.post('/api/admin/logout');
+    const response = await apiClient.post(API_CONFIG.ENDPOINTS.AUTH.LOGOUT);
     
     // Clear stored auth data
     localStorage.removeItem('adminToken');
@@ -55,7 +56,7 @@ export const logout = async () => {
  */
 export const getProfile = async () => {
   try {
-    const response = await apiClient.get('/api/admin/profile');
+    const response = await apiClient.get(API_CONFIG.ENDPOINTS.AUTH.ME);
     return response.data;
   } catch (error) {
     throw error;
@@ -72,11 +73,13 @@ export const getProfile = async () => {
  */
 export const updateProfile = async (profileData) => {
   try {
-    const response = await apiClient.put('/api/admin/profile', profileData);
+    // Note: This endpoint needs to be implemented in PHP backend
+    // For now, this will return an error until backend endpoint is created
+    const response = await apiClient.put(API_CONFIG.ENDPOINTS.ADMIN.PROFILE, profileData);
     
     // Update stored admin data if profile was updated
-    if (response.data.success && response.data.data?.admin) {
-      localStorage.setItem('adminData', JSON.stringify(response.data.data.admin));
+    if (response.data.success && response.data.data?.user) {
+      localStorage.setItem('adminData', JSON.stringify(response.data.data.user));
     }
     
     return response.data;
@@ -86,12 +89,19 @@ export const updateProfile = async (profileData) => {
 };
 
 /**
- * Verify admin token
+ * Verify admin token (using refresh endpoint)
  * @returns {Promise} Response indicating token validity
  */
 export const verifyToken = async () => {
   try {
-    const response = await apiClient.get('/api/admin/verify-token');
+    const response = await apiClient.post(API_CONFIG.ENDPOINTS.AUTH.REFRESH);
+    
+    // Update token if refreshed successfully
+    if (response.data.success && response.data.data?.token) {
+      localStorage.setItem('adminToken', response.data.data.token);
+      localStorage.setItem('adminData', JSON.stringify(response.data.data.user));
+    }
+    
     return response.data;
   } catch (error) {
     throw error;

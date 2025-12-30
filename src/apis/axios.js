@@ -1,18 +1,16 @@
 import axios from "axios";
+import { API_CONFIG } from './config';
 
-// Get base URL from environment variable
-const BASE_URL =
-  process.env.REACT_APP_BASE_URL ||
-  "http://localhost:80/Clinic_Website_Backend_PHP-main";
+// Live production API configuration
+console.log('🔧 Admin Panel Configuration:');
+console.log('Environment:', process.env.NODE_ENV);
+console.log('Live API URL:', API_CONFIG.BASE_URL);
 
 // Create axios instance
 const apiClient = axios.create({
-  baseURL: BASE_URL,
-  timeout: 30000, // 30 seconds
-  headers: {
-    "Content-Type": "application/json",
-    Accept: "application/json",
-  },
+  baseURL: API_CONFIG.BASE_URL,
+  timeout: API_CONFIG.TIMEOUT,
+  headers: API_CONFIG.HEADERS,
 });
 
 // Request interceptor - Add auth token to requests

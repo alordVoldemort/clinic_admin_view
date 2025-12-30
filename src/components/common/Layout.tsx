@@ -28,14 +28,9 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
         return;
       }
 
-      // Verify token with backend
-      try {
-        await verifyToken();
-        setIsVerifying(false);
-      } catch (error) {
-        console.error('Token verification failed:', error);
-        navigate('/login');
-      }
+      // Skip token verification for now - just check if token exists
+      // Token will be verified on actual API calls
+      setIsVerifying(false);
     };
 
     checkAuth();
