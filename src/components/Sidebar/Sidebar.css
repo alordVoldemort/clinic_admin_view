@@ -178,7 +178,7 @@
     /* Hide sidebar by default - positioned off-screen */
     transform: translateX(-100%);
     width: 280px;
-    box-shadow: 4px 0 20px rgba(0, 0, 0, 0.1);
+    /* box-shadow: 4px 0 20px rgba(0, 0, 0, 0.1); */
     /* Ensure it's truly fixed and doesn't affect layout */
     position: fixed;
     left: 0;

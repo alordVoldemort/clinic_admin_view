@@ -1501,7 +1501,7 @@
 @media (max-width: 768px) {
   .dashboard-content {
     padding: 16px;
-    margin-top: 64px; /* Adjusted for fixed navbar */
+    
   }
 
   .welcome-section {

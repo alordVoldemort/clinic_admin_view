@@ -267,8 +267,9 @@ const ContactMessage: React.FC = () => {
   };
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchQuery(e.target.value);
-  };
+  setSearchQuery(e.target.value);
+  setCurrentPage(1);
+};
 
   const handleDateFilterChange = (value: string) => {
     setDateFilter(value);
@@ -525,22 +526,37 @@ const ContactMessage: React.FC = () => {
       }
     });
   };
+  const filteredMessages = messages.filter((msg) => {
+  if (!searchQuery.trim()) return true;
+
+  const q = searchQuery.toLowerCase();
+
+  return (
+    msg.patient?.toLowerCase().includes(q) ||
+    msg.email?.toLowerCase().includes(q) ||
+    msg.phone?.toLowerCase().includes(q) ||
+    msg.subject?.toLowerCase().includes(q) ||
+    msg.message?.toLowerCase().includes(q)
+  );
+});
+
 
   // Sort messages based on sortConfig (client-side sorting for now)
-  const sortedMessages = [...messages].sort((a, b) => {
-    if (!sortConfig.order) return 0;
+ const sortedMessages = [...filteredMessages].sort((a, b) => {
+  if (!sortConfig.order) return 0;
 
-    const aValue = a[sortConfig.column as keyof typeof a];
-    const bValue = b[sortConfig.column as keyof typeof b];
+  const aValue = a[sortConfig.column as keyof typeof a];
+  const bValue = b[sortConfig.column as keyof typeof b];
 
-    if (typeof aValue === "string" && typeof bValue === "string") {
-      return sortConfig.order === "asc"
-        ? aValue.localeCompare(bValue)
-        : bValue.localeCompare(aValue);
-    }
+  if (typeof aValue === "string" && typeof bValue === "string") {
+    return sortConfig.order === "asc"
+      ? aValue.localeCompare(bValue)
+      : bValue.localeCompare(aValue);
+  }
 
-    return 0;
-  });
+  return 0;
+});
+
 
   const handleSelectAll = () => {
     if (checkedRows.length === sortedMessages.length && sortedMessages.length > 0) {
